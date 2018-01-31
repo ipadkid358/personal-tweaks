@@ -1,0 +1,9 @@
+Package: com.sticktron.darkmessages
+Name: DarkMessages
+Depends: firmware (>= 10.0), mobilesubstrate
+Version: 1.2.1
+Architecture: iphoneos-arm
+Description: Dark theme for Messages app!
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: Sticktron <sticktron@hotmail.com>
+Section: Tweaks

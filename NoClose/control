@@ -1,0 +1,9 @@
+Package: com.skylerk99.noclose
+Name: NoClose
+Depends: mobilesubstrate, com.ipadkid.bjutils
+Version: 0.0.3
+Architecture: iphoneos-arm
+Description: Prompts before closing now playing application.
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: Skyler Kansala
+Section: Tweaks
