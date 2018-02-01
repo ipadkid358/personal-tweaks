@@ -1,0 +1,9 @@
+Package: com.ipadkid.usagebarx
+Name: UsageBarX
+Depends: mobilesubstrate
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Only show StatusBar background items as the height of the status bar. Activities such as hotspot, navigation, calls, and recording show a large bar under the status bar. UsageBarX only shows the color behind the status bar
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: ipad_kid <ipadkid358@gmail.com>
+Section: Tweaks

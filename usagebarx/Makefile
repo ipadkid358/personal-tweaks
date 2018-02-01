@@ -2,9 +2,9 @@ ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = DarkMessages
-DarkMessages_FILES = Tweak.x
-DarkMessages_CFLAGS = -fobjc-arc
+TWEAK_NAME = UsageBarX
+UsageBarX_FILES = Tweak.x
+UsageBarX_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
