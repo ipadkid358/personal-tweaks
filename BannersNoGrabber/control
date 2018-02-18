@@ -1,0 +1,9 @@
+Package: com.sinfool.bannersnograbber
+Name: Banners - No Grabber
+Author: Sinfool
+Description: Hides the grabber from banner notifications.
+Depends: mobilesubstrate
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Architecture: iphoneos-arm
+Section: Tweaks
+Version: 0.0.2
