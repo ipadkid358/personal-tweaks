@@ -1,19 +1,18 @@
 #import <objc/runtime.h>
-#import <substrate.h>
 #import <ifaddrs.h>
 #import <net/if.h>
 
 @interface SBStatusBarStateAggregator : NSObject
 + (instancetype)sharedInstance;
-- (void)_updatePersonNameItem;
+- (void)setUserNameOverride:(NSString *)name;
 @end
 
 @interface SpringBoard
 - (BOOL)hasFinishedLaunching;
 @end
 
-static const unsigned int kilobytes = 1 << 10;
-static const unsigned int megabytes = 1 << 20;
+static const long kilobytes = 1 << 10;
+static const long megabytes = 1 << 20;
 
 NSString *bytesFormat(long bytes) {
     @autoreleasepool {
@@ -23,7 +22,7 @@ NSString *bytesFormat(long bytes) {
         if (bytes < kilobytes) {
             return [NSString stringWithFormat:@"%ldB/s", bytes];
         }
-        if (bytes >= kilobytes && bytes < megabytes) {
+        if (bytes < megabytes) {
             return [NSString stringWithFormat:@"%.1fK/s", (double)bytes / kilobytes];
         }
         return [NSString stringWithFormat:@"%.2fM/s", (double)bytes / megabytes];
@@ -53,6 +52,7 @@ long getBytesTotal() {
             iBytes += if_data->ifi_ibytes;
             oBytes += if_data->ifi_obytes;
         }
+        
         freeifaddrs(ifa_list);
         return iBytes + oBytes;
     }
@@ -71,8 +71,9 @@ static __attribute__((constructor)) void setupSpringBoardTimer() {
         SpringBoard *springboard = (SpringBoard *)UIApplication.sharedApplication;
         if (springboard.hasFinishedLaunching) {
             SBStatusBarStateAggregator *statusBarStateAggregator = [objc_getClass("SBStatusBarStateAggregator") sharedInstance];
-            MSHookIvar<NSString *>(statusBarStateAggregator, "_overridePersonName") = bytesFormat(dataDiff);
-            [statusBarStateAggregator _updatePersonNameItem];
+            
+            // The only ivar that setting seems to do anything at all
+            [statusBarStateAggregator setUserNameOverride:bytesFormat(dataDiff)];
         }
     }];
 }

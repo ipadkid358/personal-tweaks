@@ -1,7 +1,7 @@
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = FLEXLockFix
-FLEXLockFix_FILES = Tweak.x
+TWEAK_NAME = NoCCHomePage
+NoCCHomePage_FILES = Tweak.xm
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

@@ -1,24 +1,20 @@
-@interface StatusVolX : NSObject {
-    int volume;
-    NSTimer *hideTimer;
-    BOOL svolCloseInterrupt;
-    BOOL isAnimatingClose;
-}
+@interface StatusVolX : NSObject
 
-@property(nonatomic) BOOL showingVolume;
+@property (nonatomic) BOOL showingVolume;
 
 - (void)showVolume:(float)vol;
 - (NSString *)volumeString;
+
 @end
 
 @interface VolumeControl : NSObject
-+ (id)sharedVolumeControl;
++ (instancetype)sharedVolumeControl;
 - (float)getMediaVolume;
 - (float)volume;
 @end
 
 @interface SBStatusBarStateAggregator
-+ (id)sharedInstance;
++ (instancetype)sharedInstance;
 - (void)_resetTimeItemFormatter;
 - (void)_updateTimeItems;
 @end
@@ -32,9 +28,9 @@ NSString *oldFormatter;
 - (void)_resetTimeItemFormatter {
     %orig;
     
-    NSDateFormatter *timeFormat = MSHookIvar<NSDateFormatter *>(self,"_timeItemDateFormatter");
-    if (oldFormatter == nil) {
-        oldFormatter = [timeFormat dateFormat]; // Allows us to reset the format
+    NSDateFormatter *timeFormat = [self valueForKey:@"_timeItemDateFormatter"];
+    if (!oldFormatter) {
+        oldFormatter = timeFormat.dateFormat; // Allows us to reset the format
     }
     
     timeFormat.dateFormat = svx.showingVolume ? svx.volumeString : oldFormatter;
@@ -43,36 +39,50 @@ NSString *oldFormatter;
 %end
 
 // Hook volume change events
-%hook VolumeControl
-- (void)_changeVolumeBy:(float)volumeStep {
+%hook SBMediaController
+
+- (void)_systemVolumeChanged:(id)arg1 {
     %orig;
     
-    int theMode = MSHookIvar<int>(self,  "_mode");
-    float showVol = theMode ? self.volume : self.getMediaVolume;
+    VolumeControl *volControl = [%c(VolumeControl) sharedVolumeControl];
+    int theMode = MSHookIvar<int>(volControl,  "_mode");
+    float showVol = theMode ? volControl.volume : volControl.getMediaVolume;
     [svx showVolume:showVol*16];
 }
 
+%end
+
 // Force hide volume HUD
-- (BOOL)_HUDIsDisplayableForCategory:(id)arg1 {
+%hook VolumeControl
+
+- (BOOL)_HUDIsDisplayableForCategory:(id)category {
     return NO;
 }
 
-- (BOOL)_isCategoryAlwaysHidden:(id)arg1 {
+- (BOOL)_isCategoryAlwaysHidden:(id)hidden {
     return YES;
 }
 
 %end
 
 %hook SpringBoard
-- (void)applicationDidFinishLaunching:(id)arg1 {
+
+- (void)applicationDidFinishLaunching:(id)application {
     %orig;
     
     // Create StatusVolX inside SpringBoard
     svx = [StatusVolX new];
 }
+
 %end
 
-@implementation StatusVolX
+
+@implementation StatusVolX {
+    int volume;
+    NSTimer *hideTimer;
+    BOOL svolCloseInterrupt;
+    BOOL isAnimatingClose;
+}
 
 - (void)showVolume:(float)vol {
     volume = (int)vol;
@@ -82,7 +92,7 @@ NSString *oldFormatter;
     [sbsa _resetTimeItemFormatter];
     [sbsa _updateTimeItems];
     
-    if (hideTimer != nil) {
+    if (hideTimer) {
         [hideTimer invalidate];
     }
     
@@ -100,7 +110,7 @@ NSString *oldFormatter;
 }
 
 - (NSString *)volumeString {
-    return [NSString stringWithFormat:@"'#%d'", volume];
+    return [NSString stringWithFormat:@"%c%d", '#', volume];
 }
 
 @end

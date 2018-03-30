@@ -1,0 +1,9 @@
+Package: com.ipadkid.grasshopper
+Name: Grasshopper
+Depends: mobilesubstrate
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Enable picture-in-picture on all devices
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: ipad_kid <ipadkid358@gmail.com>
+Section: Tweaks

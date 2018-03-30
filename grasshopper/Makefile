@@ -1,10 +1,8 @@
-ARCHS = arm64
-
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = NtSpeed
-NtSpeed_FILES = Tweak.m
-NtSpeed_CFLAGS = -fobjc-arc
+TWEAK_NAME = Grasshopper
+Grasshopper_FILES = Tweak.c
+Grasshopper_LIBRARIES = MobileGestalt
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
