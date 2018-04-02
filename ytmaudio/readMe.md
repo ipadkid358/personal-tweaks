@@ -1,3 +1,3 @@
 ## YTMAudio
 
-YouTube Music uses a lot of data. This tweak only allows audio to play. Flipping the switch does nothing
+Disables video playback in YouTube Music. Toggling the in-app switch does nothing.

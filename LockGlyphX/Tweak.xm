@@ -7,10 +7,8 @@
 @property (nonatomic, copy) UIColor *primaryColor;
 @property (nonatomic, copy) UIColor *secondaryColor;
 @property (nonatomic, readonly) int state;
-@property (readonly) Class superclass;
 
-- (id)initWithFrame:(CGRect)frame;
-- (id)initWithStyle:(UITableViewStyle)style;
+- (instancetype)initWithStyle:(UITableViewStyle)style;
 - (void)setState:(int)state animated:(BOOL)animated completionHandler:(void (^)(void))block;
 
 @end
@@ -25,12 +23,15 @@
 
 
 @interface SBLockScreenManager : NSObject
-+ (id)sharedInstance;
++ (instancetype)sharedInstance;
 
 @property (readonly) BOOL isUILocked;
 @end
 
 @interface SBDashBoardViewBase : UIView
+@end
+
+@interface SBDashBoardViewControllerBase : UIViewController
 @end
 
 @interface SBDashBoardPageViewBase : SBDashBoardViewBase
@@ -42,6 +43,8 @@
 - (void)biometricEventMonitor:(id)eventMonitor handleBiometricEvent:(unsigned long long)event;
 @end
 
+@interface SBDashBoardNotificationListViewController : SBDashBoardViewControllerBase
+@end
 
 // MARK: - TouchID glyph and status defines
 
@@ -298,6 +301,22 @@ static void performShakeFingerFailAnimation() {
             }
         }
     }
+}
+
+%end
+
+// MARK: - SBDashBoardNotificationListViewController hooks
+
+%hook SBDashBoardNotificationListViewController
+// Reverse engineered directly out of HotDog
+- (void)_layoutListView {
+    %orig;
+    
+    UIView *clippingView = [self valueForKey:@"_clippingView"];
+    CGRect patchRect = clippingView.frame;
+    // high enough for the glyph to be nice
+    patchRect.size.height = 416;
+    clippingView.frame = patchRect;
 }
 
 %end

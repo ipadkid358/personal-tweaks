@@ -21,7 +21,7 @@
 - (void)willActivateHosting {
     %orig;
     
-    // using bool forces into one bit
+    // using bool forces into one byte
     BOOL index = self.notificationListViewController.sectionList.sectionCount;
     [self.notificationAndTodayContainerView scrollToPageAtIndex:index animated:0];
 }

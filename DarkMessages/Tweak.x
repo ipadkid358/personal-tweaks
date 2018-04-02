@@ -7,10 +7,17 @@
 @interface CKMessagePartChatItem : CKBalloonChatItem
 @end
 
-// Settings darkmode as theme
+@interface CKUITheme : NSObject
+@end
+
+@interface CKUIThemeDark : CKUITheme
+@end
+
+// set darkmode as theme
 %hook CKUIBehaviorPhone
-- (id)theme {
-    return [%c(CKUIThemeDark) new];
+- (CKUITheme *)theme {
+    // This requires private frameworks for iOS 10 to link against
+    return [CKUIThemeDark new];
 }
 %end
 
@@ -56,9 +63,6 @@
     return nl;
 }
 %end
-
-// The original tweak has a hook here labeled "fix message entry inactive color"
-// It was for -collpasedPlaceholderLabel on CKMessageEntryView, which I've never seen visible
 
 // set messages to red if they fail to send
 %hook CKMessagePartChatItem
