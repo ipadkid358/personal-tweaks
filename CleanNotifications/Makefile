@@ -1,7 +1,10 @@
+ARCHS = arm64
+
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = NoToogleColor
-NoToogleColor_FILES = Tweak.x
+TWEAK_NAME = CleanNotifications
+CleanNotifications_FILES = Tweak.x
+CleanNotifications_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

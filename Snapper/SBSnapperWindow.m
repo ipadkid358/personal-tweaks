@@ -13,12 +13,19 @@ UIImage *_UICreateScreenUIImage();
 
 
 @implementation SBSnapperWindow {
+    /// View whose frame is used for screenshot area, and is edited via GestureRecognizers
     UIView *_internalView;
+    
+    /// The origin when the first pan recognizer hit is registered
     CGPoint _startingPoint;
+    
+    /// The xDiff when first pinch recognizer hit is registered
+    CGFloat _startingDiffX;
+    /// The yDiff when first pinch recognizer hit is registered
+    CGFloat _startingDiffY;
+    /// The full rect when first pinch recognizer hit is registered
+    CGRect _startingRect;
 }
-
-// TODO: Cut out screenshot view, instead of making it even darker
-// TODO: Allow resizing of the screenshot view after dragging
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -27,6 +34,7 @@ UIImage *_UICreateScreenUIImage();
         
         [self addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)]];
         [self addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(holdGesture:)]];
+        [self addGestureRecognizer:[[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchGesture:)]];
         
         UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
         doubleTap.numberOfTapsRequired = 2;
@@ -42,27 +50,6 @@ UIImage *_UICreateScreenUIImage();
     }
     
     return self;
-}
-
-- (void)internalViewPanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
-    CGPoint translation = [gestureRecognizer translationInView:self];
-    CGRect origFrame = _internalView.frame;
-    CGPoint originPatch = origFrame.origin;
-    
-    CGFloat newOX = originPatch.x + translation.x;
-    CGFloat newOY = originPatch.y + translation.y;
-    if ((newOX >= 0) && ((origFrame.size.width + newOX) <= 414)) {
-        originPatch.x = newOX;
-    }
-    
-    if ((newOY >= 0) && ((origFrame.size.height + newOY) <= 736)) {
-        originPatch.y = newOY;
-    }
-    
-    origFrame.origin = originPatch;
-    _internalView.frame = origFrame;
-    
-    [gestureRecognizer setTranslation:CGPointZero inView:self];
 }
 
 - (void)tapGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
@@ -94,6 +81,78 @@ UIImage *_UICreateScreenUIImage();
     }
 }
 
+- (void)internalViewPanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
+    CGPoint translation = [gestureRecognizer translationInView:self];
+    CGRect origFrame = _internalView.frame;
+    CGPoint originPatch = origFrame.origin;
+    
+    CGFloat newOX = originPatch.x + translation.x;
+    CGFloat newOY = originPatch.y + translation.y;
+    // hardcoded Plus width
+    if ((newOX >= 0) && ((origFrame.size.width + newOX) <= 414)) {
+        originPatch.x = newOX;
+    }
+    
+    // hardcoded Plus height
+    if ((newOY >= 0) && ((origFrame.size.height + newOY) <= 736)) {
+        originPatch.y = newOY;
+    }
+    
+    origFrame.origin = originPatch;
+    _internalView.frame = origFrame;
+    
+    [gestureRecognizer setTranslation:CGPointZero inView:self];
+}
+
+- (void)pinchGesture:(UIPinchGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.numberOfTouches == 2) {
+        CGPoint firstTouch = [gestureRecognizer locationOfTouch:0 inView:self];
+        CGPoint secondTouch = [gestureRecognizer locationOfTouch:1 inView:self];
+        CGFloat xDiff = ABS(firstTouch.x-secondTouch.x);
+        CGFloat yDiff = ABS(firstTouch.y-secondTouch.y);
+        
+        UIGestureRecognizerState recognizerState = gestureRecognizer.state;
+        
+        if (recognizerState == UIGestureRecognizerStateBegan) {
+            _startingRect = _internalView.frame;
+            _startingDiffX = xDiff;
+            _startingDiffY = yDiff;
+        }
+        
+        if (recognizerState == UIGestureRecognizerStateChanged) {
+            CGFloat xScale = xDiff/_startingDiffX;
+            CGFloat yScale = yDiff/_startingDiffY;
+            
+            CGFloat lenX = _startingRect.size.width;
+            CGFloat lenY = _startingRect.size.height;
+            
+            lenX *= xScale;
+            lenY *= yScale;
+            
+            CGFloat origX = CGRectGetMidX(_startingRect) - (lenX/2);
+            CGFloat origY = CGRectGetMidY(_startingRect) - (lenY/2);
+            
+            if (origX < 0)  {
+                origX = 0;
+            }
+            
+            if (origY < 0) {
+                origY = 0;
+            }
+            
+            if ((lenX + origX) > 414) {
+                lenX = 414-origX;
+            }
+            
+            if ((lenY + origY) > 736) {
+                lenY = 736-origY;
+            }
+            
+            _internalView.frame = CGRectMake(origX, origY, lenX, lenY);
+        }
+    }
+}
+
 - (void)panGesture:(UIPanGestureRecognizer *)gestureRecognizer {
     CGPoint hitPoint = [gestureRecognizer locationInView:self];
     UIGestureRecognizerState recognizerState = gestureRecognizer.state;
@@ -101,7 +160,9 @@ UIImage *_UICreateScreenUIImage();
     
     if (recognizerState == UIGestureRecognizerStateBegan) {
         framePatch.origin = _startingPoint = hitPoint;
-    } else if (recognizerState == UIGestureRecognizerStateChanged) {
+    }
+    
+    if (recognizerState == UIGestureRecognizerStateChanged) {
         CGFloat xDiff = _startingPoint.x-hitPoint.x;
         if (xDiff < 0) {
             framePatch.size.width = -1.0*xDiff;
@@ -123,6 +184,7 @@ UIImage *_UICreateScreenUIImage();
 }
 
 - (void)dismiss {
+    // duration, so it's not so abrupt
     [UIViewPropertyAnimator runningPropertyAnimatorWithDuration:0.2 delay:0 options:0 animations:^{
         _internalView.frame = CGRectZero;
         self.hidden = YES;
@@ -133,6 +195,7 @@ UIImage *_UICreateScreenUIImage();
     self.hidden = NO;
 }
 
+// allows UIWindows to appear on the lockscreen
 - (BOOL)_shouldCreateContextAsSecure {
     return YES;
 }
@@ -143,8 +206,11 @@ UIImage *_UICreateScreenUIImage();
 
 + (void)load {
     NSNotificationCenter *notifCenter = NSNotificationCenter.defaultCenter;
+    // loading a UIWindow before an application is done loading is bad. In this case, SpringBoard would crash when trying to set hidden to NO
     [notifCenter addObserverForName:UIApplicationDidFinishLaunchingNotification object:NULL queue:NULL usingBlock:^(NSNotification *note) {
+        // use the designated initializer to get the frame for free
         SBSnapperWindow *listener = self.new;
+        // set the color here, as the designated initializer sets it to blackColor, override the subclass initializer
         listener.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.25];
         [LASharedActivator registerListener:listener forName:@"com.ipadkid.snapper"];
     }];

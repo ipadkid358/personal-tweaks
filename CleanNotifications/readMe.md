@@ -2,4 +2,4 @@
 
 Forked from [CleanNotifications10](https://github.com/AppleBetas/CleanNotifications10)
 
-No additions are fixes have been made, just compiled myself for arm64 only
+No additions or fixes have been made to the code, just cleaned up compile process

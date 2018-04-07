@@ -1,0 +1,9 @@
+Package: com.ipadkid.sinsofmen
+Name: Sins of Men
+Depends: mobilesubstrate
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Compilation of Sinfool tweaks for SpringBoard
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: ipad_kid <ipadkid358@gmail.com>
+Section: Tweaks
