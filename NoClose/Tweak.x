@@ -1,17 +1,10 @@
-#import <objc/runtime.h>
-
 @interface SBDeckSwitcherViewController
-
 - (void)killDisplayItemOfContainer:(id)arg1 withVelocity:(CGFloat)arg2;
-
 @end
 
 @interface SBAlertItem : NSObject
-
 - (void)dismiss;
-
 @end
-
 
 @interface BJSBAlertItem : SBAlertItem
 
@@ -21,7 +14,6 @@
 - (void)present;
 
 @end
-
 
 @interface SBDisplayItem : NSObject
 @property (nonatomic, readonly) NSString *displayIdentifier;
@@ -40,7 +32,8 @@
 - (SBApplication *)nowPlayingApplication;
 @end
 
-BOOL showingAlert;
+
+static BOOL showingAlert;
 
 %hook SBDeckSwitcherViewController
 
@@ -58,13 +51,11 @@ BOOL showingAlert;
     %orig;
     
     SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
-    if ((progress > 0.2) && [container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier]) {
-        if (showingAlert) {
-            return;
-        }
-        
+    if ((progress > 0.2) && [container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier] && !showingAlert) {
         showingAlert = YES;
+
         BJSBAlertItem *sbAlert = [objc_getClass("BJSBAlertItem") new];
+
         sbAlert.alertTitle = @"Are you sure you'd like to close the now playing app?";
         sbAlert.alertActions = @[[UIAlertAction actionWithTitle:@"No, Keep" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
             [sbAlert dismiss];

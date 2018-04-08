@@ -7,3 +7,4 @@ Depends: mobilesubstrate
 Architecture: iphoneos-arm
 Maintainer: ipad_kid <ipadkid358@gmail.com>
 Author: Jay Zuerndorfer
+Tag: ipadkid::true

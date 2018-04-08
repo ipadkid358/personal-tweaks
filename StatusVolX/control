@@ -1,11 +1,11 @@
-Package: com.chewmieser.statusvolx
+Package: com.ipadkid.statusvolx
 Name: StatusVolX
 Depends: mobilesubstrate
-Conflicts: com.chewmieser.statusvol, com.chewmieser.statusvollite
-Version: 0.6
+Conflicts: com.chewmieser.statusvol, com.chewmieser.statusvollite, com.chewmieser.statusvolx
+Version: 0.0.1
 Architecture: iphoneos-arm
 Description: Volume HUD in your status bar
 Maintainer: ipad_kid <ipadkid358@gmail.com>
 Author: Steven Rolfe
 Section: Tweaks
-Depiction: http://apt.steverolfe.com/depiction/statusvolx.html
+Tag: ipadkid::true

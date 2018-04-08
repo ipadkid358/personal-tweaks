@@ -13,7 +13,7 @@
 - (float)volume;
 @end
 
-@interface SBStatusBarStateAggregator
+@interface SBStatusBarStateAggregator : NSObject
 + (instancetype)sharedInstance;
 - (void)_resetTimeItemFormatter;
 - (void)_updateTimeItems;

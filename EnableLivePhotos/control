@@ -7,3 +7,4 @@ Maintainer: ipad_kid <ipadkid358@gmail.com>
 Architecture: iphoneos-arm
 Section: Tweaks
 Version: 0.0.1
+Tag: ipadkid::true

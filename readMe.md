@@ -6,6 +6,8 @@ Generally these tweaks should not be used on your own device, unless you're sure
 
 None of this code is licensed by ipad_kid, however no code from this repository should be used without consent from the original author (if applicable), and myself- this goes for original authors as well. Forked repos have their original owner's licensed
 
+The line "Tag: ipadkid::true" has been added to all control files in this repo. This is for my personal tools, and does not impact the package in anyway, nor should it be used on your device or packages
+
 
 ### Why does this repo exist?
 
