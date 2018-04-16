@@ -23,7 +23,7 @@
 %hook SBSearchEtceteraDateViewController
 
 - (void)setUseMultiLineDate:(BOOL)multiLine {
-	%orig(NO);
+    %orig(NO);
 }
 
 %end
@@ -32,7 +32,7 @@
 %hook NCNotificationShortLookView
 
 - (void)setMessageNumberOfLines:(NSUInteger)numberOfLines {
-	%orig(INFINITY);
+    %orig(INFINITY);
 } 
 
 %end
@@ -41,16 +41,19 @@
 %hook NCNotificationShortLookViewController
 
 - (BOOL)_shouldAddHintTextToLookView {
-	return NO;
+    return NO;
 }
 
 %end
 
-// Don't add Today View footer stuff
+// Don't show Today View footer stuff
 %hook WGShortLookStyleButton
 
 - (double)_dimension {
-	return 0;
+    return 0;
+}
+
+- (void)setTitle:(id)title {
 }
 
 %end
@@ -81,18 +84,56 @@
 %end
 
 // Don't show lockscreen unlock prompt text
-%hook SBDashBoardMainPageView
+%hook SBUICallToActionLabel
 
-- (void)_layoutCallToActionLabel {
+- (id)initWithFrame:(CGRect)frame {
+    return NULL;
 }
 
 %end
 
-// Remove Today View on homescreen
-%hook SBRootFolderView
+// Don't show bottom Notification Center separator
+%hook SBNotificationSeparatorView
 
-- (NSUInteger)_minusPageCount {
-	return 0;
-} 
+- (void)updateForCurrentState {
+}
+
+%end
+
+// Don't show Notification Center page dots
+%hook SBNotificationCenterViewController
+
+- (void)_loadPageControl {
+}
+
+%end
+
+// Don't show lockscreen page dots
+%hook SBDashBoardPageControl
+
+- (void)_setIndicatorImage:(id)image toEnabled:(BOOL)enabled index:(NSInteger)index {
+}
+
+%end
+
+// Show time in status bar on lockscreen
+%hook SBDashBoardViewController
+
+- (BOOL)shouldShowLockStatusBarTime {
+    return YES;
+}
+
+%end
+
+// No update/beta icon badges (blue and green dots, respectively)
+%hook SBLeafIcon
+
+- (BOOL)isRecentlyUpdated {
+    return NO;
+}
+
+- (BOOL)isBeta {
+    return NO;
+}
 
 %end

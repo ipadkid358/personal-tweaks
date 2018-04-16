@@ -55,11 +55,12 @@ static void setupTimeBatteryView(SBNotificationCenterController *controller) {
     for (UIView *brotherView in grabberView.superview.subviews) {
         if (brotherView.class == UIView.class) {
             [brotherView addSubview:timeLabelView];
+            break;
         }
     }
 }
 
-void removeTimeBatteryView() {
+static inline void removeTimeBatteryView() {
     [timeLabelView removeFromSuperview];
 }
 

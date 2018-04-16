@@ -8,7 +8,13 @@
 
 #import "SBSnapperWindow.h"
 
-/// Get an image representation of the current screen. Image is at full device resolution, pre-scaling. Calling with function from outside of SpringBoard will yeild a black image
+// hardcoded Plus width
+#define kPlusWidth  414.0f
+// hardcoded Plus height
+#define kPlusHeight 736.0f
+
+/// Get an image representation of the current screen. Image is at full device resolution, pre-scaling.
+/// Calling with function from outside of SpringBoard will yeild a black image
 UIImage *_UICreateScreenUIImage();
 
 
@@ -88,13 +94,12 @@ UIImage *_UICreateScreenUIImage();
     
     CGFloat newOX = originPatch.x + translation.x;
     CGFloat newOY = originPatch.y + translation.y;
-    // hardcoded Plus width
-    if ((newOX >= 0) && ((origFrame.size.width + newOX) <= 414)) {
+    
+    if ((newOX >= 0) && ((origFrame.size.width + newOX) <= kPlusWidth)) {
         originPatch.x = newOX;
     }
     
-    // hardcoded Plus height
-    if ((newOY >= 0) && ((origFrame.size.height + newOY) <= 736)) {
+    if ((newOY >= 0) && ((origFrame.size.height + newOY) <= kPlusHeight)) {
         originPatch.y = newOY;
     }
     
@@ -140,12 +145,12 @@ UIImage *_UICreateScreenUIImage();
                 origY = 0;
             }
             
-            if ((lenX + origX) > 414) {
-                lenX = 414-origX;
+            if ((lenX + origX) > kPlusWidth) {
+                lenX = kPlusWidth-origX;
             }
             
-            if ((lenY + origY) > 736) {
-                lenY = 736-origY;
+            if ((lenY + origY) > kPlusHeight) {
+                lenY = kPlusHeight-origY;
             }
             
             _internalView.frame = CGRectMake(origX, origY, lenX, lenY);
@@ -165,7 +170,7 @@ UIImage *_UICreateScreenUIImage();
     if (recognizerState == UIGestureRecognizerStateChanged) {
         CGFloat xDiff = _startingPoint.x-hitPoint.x;
         if (xDiff < 0) {
-            framePatch.size.width = -1.0*xDiff;
+            framePatch.size.width = -xDiff;
         } else {
             framePatch.origin.x = hitPoint.x;
             framePatch.size.width = xDiff;
@@ -173,7 +178,7 @@ UIImage *_UICreateScreenUIImage();
         
         CGFloat yDiff = _startingPoint.y-hitPoint.y;
         if (yDiff < 0) {
-            framePatch.size.height = -1.0*yDiff;
+            framePatch.size.height = -yDiff;
         } else {
             framePatch.origin.y = hitPoint.y;
             framePatch.size.height = yDiff;
