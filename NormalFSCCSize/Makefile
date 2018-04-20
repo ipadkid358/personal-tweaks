@@ -2,8 +2,9 @@ ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = UsageBarX
-UsageBarX_FILES = Tweak.x
+TWEAK_NAME = NormalFSCCSize
+NormalFSCCSize_FILES = Tweak.xm
+NormalFSCCSize_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

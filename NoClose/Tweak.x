@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 @interface SBDeckSwitcherViewController
 - (void)killDisplayItemOfContainer:(id)arg1 withVelocity:(CGFloat)arg2;
 @end

@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 // Disable blurs in app switcher
 %hook SBAppSwitcherSettings
 
@@ -134,6 +136,15 @@
 
 - (BOOL)isBeta {
     return NO;
+}
+
+%end
+
+// Remove Night Shift toggle from Control Center
+%hook CCUINightShiftContentView
+
+- (BOOL)isHidden {
+    return YES;
 }
 
 %end

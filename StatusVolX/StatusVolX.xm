@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 @interface StatusVolX : NSObject
 
 @property (nonatomic) BOOL showingVolume;

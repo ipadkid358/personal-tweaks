@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 // MARK: - Private APIs
 
 @interface PKGlyphView : UIView

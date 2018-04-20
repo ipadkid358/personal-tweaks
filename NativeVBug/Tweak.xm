@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 %hook UIWindow
 
 - (BOOL)_shouldCreateContextAsSecure {

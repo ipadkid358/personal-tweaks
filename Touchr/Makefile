@@ -3,7 +3,7 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Touchr
-Touchr_FILES = Tweak.xm
+Touchr_FILES = Tweak.x
 Touchr_FRAMEWORKS = IOKit
 Touchr_CFLAGS = -fobjc-arc
 

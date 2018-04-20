@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 @interface NCNotificationChronologicalList : NSObject
 - (unsigned long long)sectionCount;
 @end

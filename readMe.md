@@ -8,6 +8,15 @@ None of this code is licensed by ipad_kid, however no code from this repository 
 
 The line "Tag: ipadkid::true" has been added to all control files in this repo. This is for my personal tools, and does not impact the package in anyway, nor should it be used on your device or packages
 
+All packages are compiled with the following global Theos variables:
+
+```
+TARGET = iphone:10.2:10.2 # personally patched SDK with private framework binaries
+ADDITIONAL_CFLAGS = -DTHEOS_LEAN_AND_MEAN # see https://github.com/theos/theos/releases/tag/2.4
+```
+
+When compiling, I require `FINALPACKAGE=1` to be passed for final builds
+
 
 ### Why does this repo exist?
 

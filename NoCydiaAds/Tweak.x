@@ -1,3 +1,5 @@
+#import <UIKit/UIKit.h>
+
 @interface CyteWebView : UIWebView
 @end
 

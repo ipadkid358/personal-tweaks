@@ -1,9 +1,13 @@
+#import <UIKit/UIKit.h>
+
 @interface UIStatusBarForegroundStyleAttributes : NSObject
+
 @property (nonatomic, retain, readonly) UIColor *tintColor;
 
 - (id)shadowImageForImage:(id)arg1 withIdentifier:(id)arg2 forStyle:(int)arg3 withStrength:(float)arg4;
 - (id)textColorForStyle:(int)arg1;
 - (int)legibilityStyle;
+
 @end
 
 @interface UIStatusBarTimeItemView : UIView
