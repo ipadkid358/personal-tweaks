@@ -15,7 +15,7 @@ TARGET = iphone:10.2:10.2 # personally patched SDK with private framework binari
 ADDITIONAL_CFLAGS = -DTHEOS_LEAN_AND_MEAN # see https://github.com/theos/theos/releases/tag/2.4
 ```
 
-When compiling, I require `FINALPACKAGE=1` to be passed for final builds
+When compiling, I also pass `FINALPACKAGE=1` for final builds
 
 
 ### Why does this repo exist?

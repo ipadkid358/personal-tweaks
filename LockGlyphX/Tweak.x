@@ -173,7 +173,7 @@ static void performShakeFingerFailAnimation() {
     [fingerglyph setState:kGlyphStateDefault animated:NO completionHandler:nil];
     
     // position glyph
-    fingerglyph.frame.size = CGSizeMake(63, 63);
+    fingerglyph.frame = CGRectMake(0, 0, 63, 63);
     fingerglyph.center = CGPointMake(207, 672);
     
     // add shine animation

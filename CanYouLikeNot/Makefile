@@ -2,10 +2,8 @@ ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = NativeVBug
-NativeVBug_FILES = NativeVBugListener.m Tweak.x
-NativeVBug_CFLAGS = -fobjc-arc
-NativeVBug_LIBRARIES = activator
+TWEAK_NAME = CanYouLikeNot
+CanYouLikeNot_FILES = Tweak.x
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

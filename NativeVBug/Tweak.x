@@ -1,4 +1,4 @@
-#import <UIKit/UIKit.h>
+#import <UIKit/UIWindow.h>
 
 %hook UIWindow
 

@@ -49,13 +49,10 @@
 %end
 
 // Don't show Today View footer stuff
-%hook WGShortLookStyleButton
+%hook WGWidgetListFooterView
 
-- (double)_dimension {
-    return 0;
-}
-
-- (void)setTitle:(id)title {
+- (id)initWithFrame:(CGRect)frame {
+    return NULL;
 }
 
 %end
@@ -110,6 +107,14 @@
 
 %end
 
+// Don't show homescreen page dots
+%hook SBIconListPageControl
+
+- (void)_setIndicatorImage:(id)image toEnabled:(BOOL)enabled index:(NSInteger)index {
+}
+
+%end
+
 // Don't show lockscreen page dots
 %hook SBDashBoardPageControl
 
@@ -141,10 +146,76 @@
 %end
 
 // Remove Night Shift toggle from Control Center
-%hook CCUINightShiftContentView
+%hook CCUINightShiftSectionController
 
-- (BOOL)isHidden {
-    return YES;
+- (BOOL)enabled {
+    return NO;
+}
+
+%end
+
+// Disable Camera on the lockscreen
+%hook SpringBoard
+
+- (BOOL)lockScreenCameraSupported {
+    return NO;
+}
+
+%end
+
+// Blank passcode buttons
+%hook SBPasscodeNumberPadButton
+
++ (id)imageForCharacter:(unsigned)character {
+    return NULL;
+}
+
++ (id)imageForCharacter:(unsigned)character highlighted:(BOOL)highlighted {
+    return NULL;
+}
+
+%end
+
+// Don't play charging chime
+%hook SBUIController
+
+- (void)playConnectedToPowerSoundIfNecessary {
+}
+
+%end
+
+// Hide all icon labels
+%hook SBMutableIconLabelImageParameters
+
+- (void)setScale:(CGFloat)scale {
+    %orig(0);
+}
+
+%end
+
+// Hide title of open folder
+%hook SBFloatyFolderView
+
+- (BOOL)_showsTitle {
+    return NO;
+}
+
+%end
+
+// Speed up animations
+%hook SBAnimationFactorySettings
+
+- (CGFloat)slowDownFactor {
+    return 0.6;
+}
+
+%end
+
+// Disable Home Control Center page
+%hook HUHomeControlCenterViewController
+
+- (BOOL)wantsVisible {
+    return NO;
 }
 
 %end

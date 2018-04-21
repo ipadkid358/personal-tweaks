@@ -1,9 +1,9 @@
-Package: com.ipadkid.nocchomepage
-Name: NoCCHomePage
+Package: com.ipadkid.fullstatustime
+Name: FullStatusTime
 Depends: mobilesubstrate
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: Hide HomeKit Control Center page
+Description: Full date format in status bar
 Maintainer: ipad_kid <ipadkid358@gmail.com>
 Author: ipad_kid <ipadkid358@gmail.com>
 Section: Tweaks
