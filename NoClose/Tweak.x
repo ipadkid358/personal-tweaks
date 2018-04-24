@@ -1,9 +1,5 @@
 #import <UIKit/UIKit.h>
 
-@interface SBDeckSwitcherViewController
-- (void)killDisplayItemOfContainer:(id)arg1 withVelocity:(CGFloat)arg2;
-@end
-
 @interface SBAlertItem : NSObject
 - (void)dismiss;
 @end
@@ -25,6 +21,10 @@
 @property(readonly, retain, nonatomic) SBDisplayItem *displayItem;
 @end
 
+@interface SBDeckSwitcherViewController
+- (void)killDisplayItemOfContainer:(SBDeckSwitcherItemContainer *)container withVelocity:(CGFloat)velocity;
+@end
+
 @interface SBApplication : NSObject
 - (NSString *)displayIdentifier;
 @end
@@ -34,20 +34,19 @@
 - (SBApplication *)nowPlayingApplication;
 @end
 
-
+// Used to make sure another alert isn't triggered while one is already showing
 static BOOL showingAlert;
 
 %hook SBDeckSwitcherViewController
 
-- (BOOL)isDisplayItemOfContainerRemovable:(SBDeckSwitcherItemContainer *)arg {
+- (BOOL)isDisplayItemOfContainerRemovable:(SBDeckSwitcherItemContainer *)container {
     SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
-    if ([arg.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier]) {
+    if ([container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier]) {
         return NO;
     } else {
         return %orig;
     }
 }
-
 
 - (void)scrollViewKillingProgressUpdated:(CGFloat)progress ofContainer:(SBDeckSwitcherItemContainer *)container {
     %orig;
@@ -55,9 +54,9 @@ static BOOL showingAlert;
     SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
     if ((progress > 0.2) && [container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier] && !showingAlert) {
         showingAlert = YES;
-
+        
         BJSBAlertItem *sbAlert = [objc_getClass("BJSBAlertItem") new];
-
+        
         sbAlert.alertTitle = @"Are you sure you'd like to close the now playing app?";
         sbAlert.alertActions = @[[UIAlertAction actionWithTitle:@"No, Keep" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
             [sbAlert dismiss];
