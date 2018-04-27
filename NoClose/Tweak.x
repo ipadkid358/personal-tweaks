@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 @interface SBAlertItem : NSObject
 - (void)dismiss;
@@ -14,19 +15,19 @@
 @end
 
 @interface SBDisplayItem : NSObject
-@property (nonatomic, readonly) NSString *displayIdentifier;
+@property (nonatomic, copy, readonly) NSString *displayIdentifier;
 @end
 
-@interface SBDeckSwitcherItemContainer
-@property(readonly, retain, nonatomic) SBDisplayItem *displayItem;
+@interface SBDeckSwitcherItemContainer : UIView
+@property (nonatomic, readonly) SBDisplayItem *displayItem;
 @end
 
-@interface SBDeckSwitcherViewController
+@interface SBDeckSwitcherViewController : UIViewController
 - (void)killDisplayItemOfContainer:(SBDeckSwitcherItemContainer *)container withVelocity:(CGFloat)velocity;
 @end
 
 @interface SBApplication : NSObject
-- (NSString *)displayIdentifier;
+- (NSString *)bundleIdentifier;
 @end
 
 @interface SBMediaController : NSObject
@@ -34,25 +35,27 @@
 - (SBApplication *)nowPlayingApplication;
 @end
 
+
 // Used to make sure another alert isn't triggered while one is already showing
 static BOOL showingAlert;
+
+/// The container is for an app which is the NowPlaying app
+static BOOL isContainerNowPlayingApp(SBDeckSwitcherItemContainer *container) {
+    SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
+    return [container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.bundleIdentifier];
+}
+
 
 %hook SBDeckSwitcherViewController
 
 - (BOOL)isDisplayItemOfContainerRemovable:(SBDeckSwitcherItemContainer *)container {
-    SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
-    if ([container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier]) {
-        return NO;
-    } else {
-        return %orig;
-    }
+    return isContainerNowPlayingApp(container) ? NO : %orig;
 }
 
 - (void)scrollViewKillingProgressUpdated:(CGFloat)progress ofContainer:(SBDeckSwitcherItemContainer *)container {
     %orig;
     
-    SBMediaController *mediaController = [objc_getClass("SBMediaController") sharedInstance];
-    if ((progress > 0.2) && [container.displayItem.displayIdentifier isEqualToString:mediaController.nowPlayingApplication.displayIdentifier] && !showingAlert) {
+    if ((progress > 0.2) && isContainerNowPlayingApp(container) && !showingAlert) {
         showingAlert = YES;
         
         BJSBAlertItem *sbAlert = [objc_getClass("BJSBAlertItem") new];
