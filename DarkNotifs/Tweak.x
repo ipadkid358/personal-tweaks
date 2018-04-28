@@ -38,6 +38,11 @@ static UIColor *ourCachedWhite() {
     return ourWhite;
 }
 
+static void configureMainBackgroundView(UIView *view) {
+    view.backgroundColor = UIColor.blackColor;
+    view.alpha = 0.7;
+}
+
 // View shown when notification is expanded
 %hook NCNotificationLongLookView
 
@@ -46,21 +51,20 @@ static UIColor *ourCachedWhite() {
     
     NSArray<UIView *> *topSubviews = self.subviews;
     NSArray<UIView *> *scrollViews = topSubviews.firstObject.subviews;
+    topSubviews.lastObject.backgroundColor = [UIColor colorWithWhite:0.6 alpha:0.4];
     UIView *contentView = scrollViews.lastObject.subviews.firstObject.subviews.firstObject;
     scrollViews.firstObject.backgroundColor = NULL;
     
     contentView.backgroundColor = UIColor.blackColor;
     UIColor *ourWhite = ourCachedWhite();
     for (UILabel *subLabel in contentView.subviews.firstObject.subviews) {
-        if (subLabel.text) {
+        if ([subLabel respondsToSelector:@selector(setTextColor:)]) {
             subLabel.textColor = ourWhite;
         }
     }
     
     UIView *headerView = [self valueForKey:@"_headerContentView"];
     headerView.superview.backgroundColor = UIColor.blackColor;
-    
-    topSubviews.lastObject.backgroundColor = [UIColor colorWithWhite:0.6 alpha:0.4];
 }
 
 %end
@@ -71,9 +75,7 @@ static UIColor *ourCachedWhite() {
 - (void)layoutSubviews {
     %orig;
     
-    UIView *targetBackground = self.backgroundView.subviews.firstObject.subviews.lastObject;
-    targetBackground.backgroundColor = UIColor.blackColor;
-    targetBackground.alpha = 0.65;
+    configureMainBackgroundView(self.backgroundView.subviews.firstObject.subviews.lastObject);
     
     self.titleLabel.textColor = ourCachedWhite();
 }
@@ -95,13 +97,11 @@ static UIColor *ourCachedWhite() {
         }
     }
     
-    UIView *targetBackground = mainBackground.subviews.firstObject.subviews.lastObject;
-    targetBackground.backgroundColor = UIColor.blackColor;
-    targetBackground.alpha = 0.65;
+    configureMainBackgroundView(mainBackground.subviews.firstObject.subviews.lastObject);
     
     UIColor *ourWhite = ourCachedWhite();
     for (UILabel *label in self._notificationContentView.subviews.firstObject.subviews) {
-        if (label.text) {
+        if ([label respondsToSelector:@selector(setTextColor:)]) {
             label.textColor = ourWhite;
         }
     }
@@ -115,8 +115,15 @@ static UIColor *ourCachedWhite() {
 - (void)_configureDateLabelIfNecessary {
     %orig;
     
-    self._dateLabel.layer.filters = NULL;
-    self._titleLabel.layer.filters = NULL;
+    UILabel *dateLabel = self._dateLabel;
+    UILabel *titleLabel = self._titleLabel;
+    UIColor *ourWhite = ourCachedWhite();
+    
+    dateLabel.layer.filters = NULL;
+    titleLabel.layer.filters = NULL;
+    
+    dateLabel.textColor = ourWhite;
+    titleLabel.textColor = ourWhite;
 }
 
 %end

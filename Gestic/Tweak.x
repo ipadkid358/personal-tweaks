@@ -122,8 +122,9 @@ static BOOL shouldLayoutSubviews = YES;
     if ((gestState == UIGestureRecognizerStateEnded) || gestCancelled) {
         shouldLayoutSubviews = YES;
         
+        __weak __typeof(self) weakself = self;
         void (^layoutSubviewsCompl)(UIViewAnimatingPosition finalPosition) = ^(UIViewAnimatingPosition finalPosition) {
-            [self layoutSubviews];
+            [weakself layoutSubviews];
         };
         
         BOOL back = (newOX < -232);

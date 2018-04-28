@@ -219,3 +219,12 @@
 }
 
 %end
+
+// Disable wallpaper parallax
+%hook SBFStaticWallpaperView
+
++ (BOOL)_allowsParallax {
+    return NO;
+}
+
+%end

@@ -60,9 +60,10 @@ UIImage *_UICreateScreenUIImage();
 
 - (void)tapGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
     CGRect rect = _internalView.frame;
+    __weak __typeof(self) weakself = self;
     [UIViewPropertyAnimator runningPropertyAnimatorWithDuration:0 delay:0 options:0 animations:^{
         _internalView.frame = CGRectZero;
-        self.hidden = YES;
+        weakself.hidden = YES;
     } completion:^(UIViewAnimatingPosition finalPosition) {
         UIGraphicsBeginImageContextWithOptions(rect.size, YES, 3.0);
         
@@ -190,9 +191,10 @@ UIImage *_UICreateScreenUIImage();
 
 - (void)dismiss {
     // duration, so it's not so abrupt
+    __weak __typeof(self) weakself = self;
     [UIViewPropertyAnimator runningPropertyAnimatorWithDuration:0.2 delay:0 options:0 animations:^{
         _internalView.frame = CGRectZero;
-        self.hidden = YES;
+        weakself.hidden = YES;
     } completion:NULL];
 }
 
