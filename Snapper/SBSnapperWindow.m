@@ -15,7 +15,8 @@
 
 /// Get an image representation of the current screen. Image is at full device resolution, pre-scaling.
 /// Calling with function from outside of SpringBoard will yeild a black image
-UIImage *_UICreateScreenUIImage();
+/// See http://iphonedevwiki.net/index.php/UIImage#UICreateScreenUIImage for more information
+OBJC_EXTERN UIImage *_UICreateScreenUIImage() NS_RETURNS_RETAINED;
 
 
 @implementation SBSnapperWindow {
@@ -31,6 +32,9 @@ UIImage *_UICreateScreenUIImage();
     CGFloat _startingDiffY;
     /// The full rect when first pinch recognizer hit is registered
     CGRect _startingRect;
+    
+    /// Layer used to cutout a clear image
+    CAShapeLayer *_darkeningLayer;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -47,15 +51,27 @@ UIImage *_UICreateScreenUIImage();
         [self addGestureRecognizer:doubleTap];
         
         _internalView = UIView.new;
-        _internalView.backgroundColor = [UIColor colorWithWhite:0.4 alpha:0.6];
         _internalView.layer.borderWidth = 1;
         _internalView.layer.borderColor = UIColor.whiteColor.CGColor;
         [_internalView addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(internalViewPanGesture:)]];
+        
+        _darkeningLayer = CAShapeLayer.layer;
+        _darkeningLayer.fillRule = kCAFillRuleEvenOdd;
+        _darkeningLayer.fillColor = [[UIColor colorWithWhite:0.1 alpha:0.6] CGColor];
+        [self.layer addSublayer:_darkeningLayer];
         
         [self addSubview:_internalView];
     }
     
     return self;
+}
+
+// Thanks https://stackoverflow.com/a/16518739
+- (void)updateDarkeningLayer {
+    UIBezierPath *path = [UIBezierPath bezierPathWithRect:self.bounds];
+    [path appendPath:[UIBezierPath bezierPathWithRect:_internalView.frame]];
+    path.usesEvenOddFillRule = YES;
+    _darkeningLayer.path = path.CGPath;
 }
 
 - (void)tapGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
@@ -108,6 +124,7 @@ UIImage *_UICreateScreenUIImage();
     _internalView.frame = origFrame;
     
     [gestureRecognizer setTranslation:CGPointZero inView:self];
+    [self updateDarkeningLayer];
 }
 
 - (void)pinchGesture:(UIPinchGestureRecognizer *)gestureRecognizer {
@@ -156,6 +173,8 @@ UIImage *_UICreateScreenUIImage();
             
             _internalView.frame = CGRectMake(origX, origY, lenX, lenY);
         }
+        
+        [self updateDarkeningLayer];
     }
 }
 
@@ -187,6 +206,7 @@ UIImage *_UICreateScreenUIImage();
     }
     
     _internalView.frame = framePatch;
+    [self updateDarkeningLayer];
 }
 
 - (void)dismiss {
@@ -199,6 +219,7 @@ UIImage *_UICreateScreenUIImage();
 }
 
 - (void)show {
+    [self updateDarkeningLayer];
     self.hidden = NO;
 }
 
@@ -217,8 +238,8 @@ UIImage *_UICreateScreenUIImage();
     [notifCenter addObserverForName:UIApplicationDidFinishLaunchingNotification object:NULL queue:NULL usingBlock:^(NSNotification *note) {
         // use the designated initializer to get the frame for free
         SBSnapperWindow *listener = self.new;
-        // set the color here, as the designated initializer sets it to blackColor, override the subclass initializer
-        listener.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.25];
+        // set the color here, as the designated initializer sets it to blackColor
+        listener.backgroundColor = NULL;
         [LASharedActivator registerListener:listener forName:@"com.ipadkid.snapper"];
     }];
 }

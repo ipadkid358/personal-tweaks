@@ -228,3 +228,12 @@
 }
 
 %end
+
+// Remove "Touch ID or Enter Passcode" text
+%hook SBUIPasscodeLockViewSimpleFixedDigitKeypad
+
+- (id)_statusText {
+    return NULL;
+}
+
+%end

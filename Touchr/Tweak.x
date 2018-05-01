@@ -3,15 +3,9 @@
 
 #import <UIKit/UIKit.h>
 
-#if __cplusplus
-extern "C" {
-#endif
-    IOHIDEventSystemClientRef IOHIDEventSystemClientCreate(CFAllocatorRef allocator);
-#if __cplusplus
-}
-#endif
+OBJC_EXTERN IOHIDEventSystemClientRef IOHIDEventSystemClientCreate(CFAllocatorRef allocator);
 
-
+// I create this enum by logging outputs of -[SBDashBoardViewController handleBiometricEvent:], it does not reflect any real header
 typedef NS_ENUM(NSUInteger, SBBiometricSensorEvent) {
     SBBiometricSensorEventUp,
     SBBiometricSensorEventDown,
@@ -48,6 +42,7 @@ typedef NS_ENUM(NSUInteger, SBBiometricSensorEvent) {
 + (instancetype)sharedInstance;
 - (BOOL)activateSwitcherNoninteractively;
 @end
+
 
 static NSTimer *touchTimer = NULL;
 static BOOL reachabilityHalt = NO;
@@ -113,6 +108,7 @@ static BOOL didBeginHoldScreenShotGesture = NO;
 
 %end
 
+// To keep reachability working as expected, once triggered, kill the timer
 %hook SBReachabilityManager
 
 - (void)toggleReachability {

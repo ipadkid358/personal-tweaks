@@ -32,7 +32,7 @@
 static UIColor *ourCachedWhite() {
     static UIColor *ourWhite = NULL;
     if (!ourWhite) {
-        ourWhite = [UIColor colorWithWhite:0.85 alpha:1.0];
+        ourWhite = [UIColor colorWithWhite:0.95 alpha:1.0];
     }
     
     return ourWhite;
