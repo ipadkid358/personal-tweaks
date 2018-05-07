@@ -14,7 +14,6 @@
 #define kPlusHeight 736.0f
 
 /// Get an image representation of the current screen. Image is at full device resolution, pre-scaling.
-/// Calling with function from outside of SpringBoard will yeild a black image
 /// See http://iphonedevwiki.net/index.php/UIImage#UICreateScreenUIImage for more information
 OBJC_EXTERN UIImage *_UICreateScreenUIImage() NS_RETURNS_RETAINED;
 
@@ -30,7 +29,7 @@ OBJC_EXTERN UIImage *_UICreateScreenUIImage() NS_RETURNS_RETAINED;
     CGFloat _startingDiffX;
     /// The yDiff when first pinch recognizer hit is registered
     CGFloat _startingDiffY;
-    /// The full rect when first pinch recognizer hit is registered
+    /// The full rect when first pinch or drag recognizer hit is registered
     CGRect _startingRect;
     
     /// Layer used to cutout a clear image
@@ -53,6 +52,9 @@ OBJC_EXTERN UIImage *_UICreateScreenUIImage() NS_RETURNS_RETAINED;
         _internalView = UIView.new;
         _internalView.layer.borderWidth = 1;
         _internalView.layer.borderColor = UIColor.whiteColor.CGColor;
+        // need to have a non-clear/NULL background color to allow touches to be caught
+        // this is only an issue with SpringBoard presenting a window on top of another app
+        _internalView.backgroundColor = [UIColor colorWithWhite:0.001 alpha:0.001];
         [_internalView addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(internalViewPanGesture:)]];
         
         _darkeningLayer = CAShapeLayer.layer;
@@ -105,25 +107,41 @@ OBJC_EXTERN UIImage *_UICreateScreenUIImage() NS_RETURNS_RETAINED;
 }
 
 - (void)internalViewPanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
-    CGPoint translation = [gestureRecognizer translationInView:self];
     CGRect origFrame = _internalView.frame;
-    CGPoint originPatch = origFrame.origin;
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        _startingRect = origFrame;
+    }
+    
+    CGPoint translation = [gestureRecognizer translationInView:self];
+    CGPoint originPatch = _startingRect.origin;
     
     CGFloat newOX = originPatch.x + translation.x;
     CGFloat newOY = originPatch.y + translation.y;
     
-    if ((newOX >= 0) && ((origFrame.size.width + newOX) <= kPlusWidth)) {
-        originPatch.x = newOX;
+    if (newOX < 0)  {
+        newOX = 0;
     }
     
-    if ((newOY >= 0) && ((origFrame.size.height + newOY) <= kPlusHeight)) {
-        originPatch.y = newOY;
+    if (newOY < 0) {
+        newOY = 0;
     }
+    
+    CGFloat currWidth = origFrame.size.width;
+    if ((currWidth + newOX) > kPlusWidth) {
+        newOX = kPlusWidth-currWidth;
+    }
+    
+    CGFloat currHeight = origFrame.size.height;
+    if ((currHeight + newOY) > kPlusHeight) {
+        newOY = kPlusHeight-currHeight;
+    }
+    
+    originPatch.x = newOX;
+    originPatch.y = newOY;
     
     origFrame.origin = originPatch;
     _internalView.frame = origFrame;
     
-    [gestureRecognizer setTranslation:CGPointZero inView:self];
     [self updateDarkeningLayer];
 }
 

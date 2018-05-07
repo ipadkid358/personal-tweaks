@@ -1,0 +1,12 @@
+Package: com.ipadkid.nosub
+Name: NoSub
+Depends: mobilesubstrate
+Conflicts: com.sharedroutine.palbreak, com.sharedroutine.skylerk99.palbreak
+Provides: com.sharedroutine.palbreak, com.sharedroutine.skylerk99.palbreak
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Block Substrate in any particular app using a blacklist in the settings
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: Janosch, Skylerk99
+Section: Tweaks
+Tag: ipadkid::true
