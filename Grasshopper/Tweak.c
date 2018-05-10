@@ -1,18 +1,25 @@
-#include <substrate.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <substrate.h>
 
-BOOL MGGetBoolAnswer(CFStringRef key);
+// http://iphonedevwiki.net/index.php/LibMobileGestalt.dylib#MGGetBoolAnswer_.28iOS_7.2B.29
+CFBooleanRef MGGetBoolAnswer(CFStringRef key);
 
-static BOOL (*originalMGGetBoolAnswer)(CFStringRef key);
+static CFBooleanRef (*originalMGGetBoolAnswer)(CFStringRef);
 
-static BOOL patchedMGGetBoolAnswer(CFStringRef key) {
-    if (CFEqual(key, CFSTR("nVh/gwNpy7Jv1NOk00CMrw")) || CFEqual(key, CFSTR("ESA7FmyB3KbJFNBAsBejcg"))) {
-        return YES;
+// https://blog.timac.org/2017/0124-deobfuscating-libmobilegestalt-keys/
+static CFBooleanRef patchedMGGetBoolAnswer(CFStringRef key) {
+    // "nVh/gwNpy7Jv1NOk00CMrw" -> "MedusaPIPCapability"
+    Boolean isMedusa = CFEqual(key, CFSTR("nVh/gwNpy7Jv1NOk00CMrw"));
+    // "ESA7FmyB3KbJFNBAsBejcg" -> "ui-pip"
+    Boolean isUI_PIP = CFEqual(key, CFSTR("ESA7FmyB3KbJFNBAsBejcg"));
+    
+    if (isMedusa || isUI_PIP) {
+        return kCFBooleanTrue;
     }
     
     return originalMGGetBoolAnswer(key);
 }
 
 static __attribute__((constructor)) void setupPegasusHooks() {
-    MSHookFunction((void *)MGGetBoolAnswer, (void *)&patchedMGGetBoolAnswer, (void **)&originalMGGetBoolAnswer);
+    MSHookFunction(MGGetBoolAnswer, (void *)&patchedMGGetBoolAnswer, (void **)&originalMGGetBoolAnswer);
 } 

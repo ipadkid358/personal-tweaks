@@ -1,5 +1,5 @@
 ## StatusVolX
 
-Forked from [StatusVolX](https://github.com/fidele007/StatusVolX)
+Volume changes in the status bar. Circles to indicate the volume level
 
-Removed the fake status bar that is created if a status bar isn't visible 
+Forked from [StatusVolX](https://github.com/fidele007/StatusVolX)

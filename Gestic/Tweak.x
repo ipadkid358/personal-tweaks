@@ -44,10 +44,10 @@ static BOOL shouldLayoutSubviews = YES;
 %hook SBDashBoardScrollGestureController
 
 - (id)initWithDashBoardView:(id)dbView systemGestureManager:(id)manager {
-    self = %orig;
-    
-    UIGestureRecognizer *badGesture = [self valueForKey:@"_scrollViewGestureRecognizer"];
-    [badGesture requireGestureRecognizerToFail:gesticPan];
+    if ((self = %orig)) {
+        UIGestureRecognizer *badGesture = [self valueForKey:@"_scrollViewGestureRecognizer"];
+        [badGesture requireGestureRecognizerToFail:gesticPan];
+    }
     
     return self;
 }
@@ -58,19 +58,19 @@ static BOOL shouldLayoutSubviews = YES;
 %hook MPULockScreenMediaControlsView
 
 - (id)initWithFrame:(CGRect)frame {
-    self = %orig;
-    
-    [self setValue:NULL forKey:@"_transportControls"];
-    
-    UITapGestureRecognizer *oneTouch = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticTouches:)];
-    
-    [gesticPan addTarget:self action:@selector(handleGesticDrag:)];
-    
-    gesticView = [[UIView alloc] initWithFrame:CGRectMake(0, 82, 366, 86)];
-    [gesticView addGestureRecognizer:oneTouch];
-    [gesticView addGestureRecognizer:gesticPan];
-    
-    [self addSubview:gesticView];
+    if ((self = %orig)) {
+        [self setValue:NULL forKey:@"_transportControls"];
+        
+        UITapGestureRecognizer *oneTouch = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticTouches:)];
+        
+        [gesticPan addTarget:self action:@selector(handleGesticDrag:)];
+        
+        gesticView = [[UIView alloc] initWithFrame:CGRectMake(0, 82, 366, 86)];
+        [gesticView addGestureRecognizer:oneTouch];
+        [gesticView addGestureRecognizer:gesticPan];
+        
+        [self addSubview:gesticView];
+    }
     
     return self;
 }
@@ -91,7 +91,6 @@ static BOOL shouldLayoutSubviews = YES;
     }
     
     if ((hitX > viewPOne) && (hitX < viewPTwo)) {
-        SBMediaController *mediaControl = [objc_getClass("SBMediaController") sharedInstance];
         [mediaControl togglePlayPause];
     }
     

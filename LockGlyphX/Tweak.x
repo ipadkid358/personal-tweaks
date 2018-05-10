@@ -185,10 +185,37 @@ static void performShakeFingerFailAnimation() {
     // listen for notifications from ColorFlow/CustomCover
     if (!isObservingForCCCF) {
         NSNotificationCenter *notifCenter = NSNotificationCenter.defaultCenter;
-        [notifCenter addObserver:self selector:@selector(LG_RevertUI:) name:@"ColorFlowLockScreenColorReversionNotification" object:nil];
-        [notifCenter addObserver:self selector:@selector(LG_ColorizeUI:) name:@"ColorFlowLockScreenColorizationNotification" object:nil];
-        [notifCenter addObserver:self selector:@selector(LG_RevertUI:) name:@"CustomCoverLockScreenColourResetNotification" object:nil];
-        [notifCenter addObserver:self selector:@selector(LG_ColorizeUI:) name:@"CustomCoverLockScreenColourUpdateNotification" object:nil];
+        void (^lgRevertUI)(NSNotification *) = ^(NSNotification *note) {
+            primaryColor = UIColor.whiteColor;
+            secondaryColor = UIColor.clearColor;
+            
+            if (fingerglyph) {
+                fingerglyph.primaryColor = primaryColor;
+                fingerglyph.secondaryColor = secondaryColor;
+            }
+        };
+        
+        void (^lgColorizeUI)(NSNotification *) = ^(NSNotification *note) {
+            NSDictionary *userInfo = note.userInfo;
+            NSString *noteName = note.name;
+            if ([noteName isEqualToString:@"ColorFlowLockScreenColorizationNotification"]) {
+                primaryColor = userInfo[@"PrimaryColor"];
+                secondaryColor = userInfo[@"SecondaryColor"];
+            }
+            if ([noteName isEqualToString:@"CustomCoverLockScreenColourUpdateNotification"]) {
+                primaryColor = userInfo[@"PrimaryColour"];
+                secondaryColor = userInfo[@"SecondaryColour"];
+            }
+            
+            fingerglyph.primaryColor = primaryColor;
+            fingerglyph.secondaryColor = secondaryColor;
+        };
+        
+        [notifCenter addObserverForName:@"ColorFlowLockScreenColorReversionNotification" object:NULL queue:NULL usingBlock:lgRevertUI];
+        [notifCenter addObserverForName:@"ColorFlowLockScreenColorizationNotification" object:NULL queue:NULL usingBlock:lgColorizeUI];
+        [notifCenter addObserverForName:@"CustomCoverLockScreenColourResetNotification" object:NULL queue:NULL usingBlock:lgRevertUI];
+        [notifCenter addObserverForName:@"CustomCoverLockScreenColourUpdateNotification" object:NULL queue:NULL usingBlock:lgColorizeUI];
+        
         isObservingForCCCF = YES;
     }
 }
@@ -198,35 +225,6 @@ static void performShakeFingerFailAnimation() {
     isObservingForCCCF = NO;
     
     %orig;
-}
-
-%new
-- (void)LG_RevertUI:(NSNotification *)notification {
-    primaryColor = UIColor.whiteColor;
-    secondaryColor = UIColor.clearColor;
-    
-    if (fingerglyph) {
-        fingerglyph.primaryColor = primaryColor;
-        fingerglyph.secondaryColor = secondaryColor;
-    }
-}
-
-%new
-- (void)LG_ColorizeUI:(NSNotification *)notification {
-    NSDictionary *userInfo = notification.userInfo;
-    
-    if ([notification.name isEqualToString:@"ColorFlowLockScreenColorizationNotification"]) {
-        primaryColor = userInfo[@"PrimaryColor"];
-        secondaryColor = userInfo[@"SecondaryColor"];
-    } else if ([notification.name isEqualToString:@"CustomCoverLockScreenColourUpdateNotification"]) {
-        primaryColor = userInfo[@"PrimaryColour"];
-        secondaryColor = userInfo[@"SecondaryColour"];
-    }
-    
-    if (fingerglyph) {
-        fingerglyph.primaryColor = primaryColor;
-        fingerglyph.secondaryColor = secondaryColor;
-    }
 }
 
 %end
@@ -296,11 +294,9 @@ static void performShakeFingerFailAnimation() {
     
     if (!arg) {
         authenticated = NO;
-        if (fingerglyph) {
-            fingerglyph.alpha = 1;
-            if ([fingerglyph respondsToSelector:@selector(setState:animated:completionHandler:)]) {
-                [fingerglyph setState:kGlyphStateDefault animated:NO completionHandler:nil];
-            }
+        fingerglyph.alpha = 1;
+        if ([fingerglyph respondsToSelector:@selector(setState:animated:completionHandler:)]) {
+            [fingerglyph setState:kGlyphStateDefault animated:NO completionHandler:nil];
         }
     }
 }

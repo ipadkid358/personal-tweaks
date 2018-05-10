@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 
 @interface NCNotificationChronologicalList : NSObject
-- (unsigned long long)sectionCount;
+- (NSUInteger)sectionCount;
 @end
 
 @interface NCNotificationSectionListViewController
@@ -9,7 +9,7 @@
 @end
 
 @interface SBPagedScrollView
-- (BOOL)scrollToPageAtIndex:(unsigned long long)index animated:(BOOL)animated;
+- (BOOL)scrollToPageAtIndex:(NSUInteger)index animated:(BOOL)animated;
 @end
 
 @interface SBNotificationCenterWithSearchViewController
@@ -25,7 +25,7 @@
     
     // using bool forces into one byte
     BOOL index = self.notificationListViewController.sectionList.sectionCount;
-    [self.notificationAndTodayContainerView scrollToPageAtIndex:index animated:0];
+    [self.notificationAndTodayContainerView scrollToPageAtIndex:index animated:NO];
 }
 
 %end
