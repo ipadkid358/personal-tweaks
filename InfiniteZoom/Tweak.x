@@ -1,6 +1,8 @@
+#import <UIKit/UIKit.h>
+
 %hook PUOneUpSettings
 
-- (void)setDefaultMaximumZoomFactor:(double)factor {
+- (void)setDefaultMaximumZoomFactor:(CGFloat)factor {
     %orig(INFINITY);
 }
 

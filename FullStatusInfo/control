@@ -1,0 +1,10 @@
+Package: com.ipadkid.fullstatusinfo
+Name: FullStatusInfo
+Depends: mobilesubstrate
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Full date format and battery info in status bar
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: ipad_kid <ipadkid358@gmail.com>
+Section: Tweaks
+Tag: ipadkid::true
