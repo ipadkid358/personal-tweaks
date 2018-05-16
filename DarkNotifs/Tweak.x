@@ -29,13 +29,13 @@
 @end
 
 
-static UIColor *ourCachedWhite() {
-    static UIColor *ourWhite = NULL;
-    if (!ourWhite) {
-        ourWhite = [UIColor colorWithWhite:0.95 alpha:1.0];
+static UIColor *cachedLightColor() {
+    static UIColor *lightColor = NULL;
+    if (!lightColor) {
+        lightColor = [UIColor colorWithWhite:0.95 alpha:1.0];
     }
     
-    return ourWhite;
+    return lightColor;
 }
 
 static void configureMainBackgroundView(UIView *view) {
@@ -50,21 +50,28 @@ static void configureMainBackgroundView(UIView *view) {
     %orig;
     
     NSArray<UIView *> *topSubviews = self.subviews;
-    NSArray<UIView *> *scrollViews = topSubviews.firstObject.subviews;
-    topSubviews.lastObject.backgroundColor = [UIColor colorWithWhite:0.6 alpha:0.4];
-    UIView *contentView = scrollViews.lastObject.subviews.firstObject.subviews.firstObject;
-    scrollViews.firstObject.backgroundColor = NULL;
+    NSArray<UIView *> *seperatorViews = topSubviews.firstObject.subviews;
+    topSubviews.lastObject.backgroundColor = NULL;
+    seperatorViews.firstObject.backgroundColor = NULL;
     
-    contentView.backgroundColor = UIColor.blackColor;
-    UIColor *ourWhite = ourCachedWhite();
+    UIView *contentView = seperatorViews.lastObject.subviews.firstObject.subviews.firstObject;
+    UIView *headerView = [self valueForKey:@"_headerContentView"];
+    
+    headerView.superview.backgroundColor = NULL;
+    contentView.superview.backgroundColor = NULL;
+    contentView.backgroundColor = NULL;
+    
+    self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.7];
+    CALayer *thisLayer = self.layer;
+    thisLayer.cornerRadius = 13;
+    thisLayer.masksToBounds = YES;
+    
+    UIColor *ourWhite = cachedLightColor();
     for (UILabel *subLabel in contentView.subviews.firstObject.subviews) {
         if ([subLabel respondsToSelector:@selector(setTextColor:)]) {
             subLabel.textColor = ourWhite;
         }
     }
-    
-    UIView *headerView = [self valueForKey:@"_headerContentView"];
-    headerView.superview.backgroundColor = UIColor.blackColor;
 }
 
 %end
@@ -76,8 +83,7 @@ static void configureMainBackgroundView(UIView *view) {
     %orig;
     
     configureMainBackgroundView(self.backgroundView.subviews.firstObject.subviews.lastObject);
-    
-    self.titleLabel.textColor = ourCachedWhite();
+    self.titleLabel.textColor = cachedLightColor();
 }
 
 %end
@@ -89,20 +95,19 @@ static void configureMainBackgroundView(UIView *view) {
     %orig;
     
     NSArray<UIView *> *topSubviews = self.subviews;
-    UIView *mainBackground;
     for (UIView *subView in topSubviews) {
         if (subView.class == %c(NCMaterialView)) {
-            mainBackground = subView;
+            configureMainBackgroundView(subView.subviews.firstObject.subviews.lastObject);
             break;
         }
     }
     
-    configureMainBackgroundView(mainBackground.subviews.firstObject.subviews.lastObject);
     
-    UIColor *ourWhite = ourCachedWhite();
-    for (UILabel *label in self._notificationContentView.subviews.firstObject.subviews) {
+    UIColor *lightColor = cachedLightColor();
+    UIView *contentView = [self _notificationContentView];
+    for (UILabel *label in contentView.subviews.firstObject.subviews) {
         if ([label respondsToSelector:@selector(setTextColor:)]) {
-            label.textColor = ourWhite;
+            label.textColor = lightColor;
         }
     }
 }
@@ -115,15 +120,15 @@ static void configureMainBackgroundView(UIView *view) {
 - (void)_configureDateLabelIfNecessary {
     %orig;
     
-    UILabel *dateLabel = self._dateLabel;
-    UILabel *titleLabel = self._titleLabel;
-    UIColor *ourWhite = ourCachedWhite();
+    UILabel *dateLabel = [self _dateLabel];
+    UILabel *titleLabel = [self _titleLabel];
+    UIColor *lightColor = cachedLightColor();
     
     dateLabel.layer.filters = NULL;
     titleLabel.layer.filters = NULL;
     
-    dateLabel.textColor = ourWhite;
-    titleLabel.textColor = ourWhite;
+    dateLabel.textColor = lightColor;
+    titleLabel.textColor = lightColor;
 }
 
 %end
