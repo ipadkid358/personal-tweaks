@@ -1,0 +1,10 @@
+Package: com.ipadkid.ccrecord
+Name: CCRecord
+Depends: mobilesubstrate, firmware (>= 10.0), com.a3tweaks.flipswitch
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Screen recording in control center via FlipSwitch
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: cole cabral
+Section: Tweaks
+Tag: ipadkid::true

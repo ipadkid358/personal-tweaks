@@ -8,6 +8,8 @@
 @end
 
 @interface NCLookHeaderContentView : UIView
+@property (nonatomic, readonly) UIButton *iconButton;
+@property (nonatomic, copy) NSDate *date;
 - (UILabel *)_titleLabel;
 - (UILabel *)_dateLabel;
 @end
@@ -28,6 +30,9 @@
 @property (nonatomic, readonly) UIView *customContentView;
 @end
 
+@interface CAFilter : NSObject
++ (instancetype)filterWithType:(NSString *)type;
+@end
 
 static UIColor *cachedLightColor() {
     static UIColor *lightColor = NULL;
@@ -129,6 +134,12 @@ static void configureMainBackgroundView(UIView *view) {
     
     dateLabel.textColor = lightColor;
     titleLabel.textColor = lightColor;
+    
+    if (!self.date) {
+        CAFilter *invertFilter = [CAFilter filterWithType:@"colorInvert"];
+        UIImageView *iconView = self.iconButton.subviews.firstObject;
+        iconView.layer.filters = @[invertFilter];
+    }
 }
 
 %end
