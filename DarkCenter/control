@@ -1,0 +1,10 @@
+Package: com.ipadkid.darkcenter
+Name: DarkCenter
+Version: 0.0.1
+Depends: mobilesubstrate
+Architecture: iphoneos-arm
+Description: Dark style Control Center for iOS 10
+Maintainer: ipad_kid <ipadkid358@gmail.com>
+Author: ipad_kid <ipadkid358@gmail.com>
+Section: Tweaks
+Tag: ipadkid::true

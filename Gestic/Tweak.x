@@ -132,10 +132,11 @@ static BOOL shouldLayoutSubviews = YES;
             SBMediaController *mediaControl = [objc_getClass("SBMediaController") sharedInstance];
             [mediaControl _sendMediaCommand:(back ? 4 : 5)];
             
+            // See MusiCenter for maths
             CGRect skipFrame = resetFrame;
             skipFrame.origin.x = -400;
             CGRect backFrame = resetFrame;
-            backFrame.origin.x = 424;
+            backFrame.origin.x = 400;
             
             [UIViewPropertyAnimator runningPropertyAnimatorWithDuration:0.075 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
                 titles.frame = back ? skipFrame : backFrame;

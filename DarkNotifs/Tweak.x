@@ -9,7 +9,6 @@
 
 @interface NCLookHeaderContentView : UIView
 @property (nonatomic, readonly) UIButton *iconButton;
-@property (nonatomic, copy) NSDate *date;
 - (UILabel *)_titleLabel;
 - (UILabel *)_dateLabel;
 @end
@@ -27,12 +26,20 @@
 @end
 
 @interface NCNotificationLongLookView : NCAnimatableBlurringView
-@property (nonatomic, readonly) UIView *customContentView;
+@end
+
+@interface NCNotificationRequest : NSObject
+@property (nonatomic, copy, readonly) NSString *sectionIdentifier;
+@end
+
+@interface NCNotificationViewController : UIViewController
+@property (nonatomic, retain) NCNotificationRequest *notificationRequest;
 @end
 
 @interface CAFilter : NSObject
 + (instancetype)filterWithType:(NSString *)type;
 @end
+
 
 static UIColor *cachedLightColor() {
     static UIColor *lightColor = NULL;
@@ -62,12 +69,14 @@ static void configureMainBackgroundView(UIView *view) {
     UIView *contentView = seperatorViews.lastObject.subviews.firstObject.subviews.firstObject;
     UIView *headerView = [self valueForKey:@"_headerContentView"];
     
+    // remove all these views' colors
     headerView.superview.backgroundColor = NULL;
     contentView.superview.backgroundColor = NULL;
     contentView.backgroundColor = NULL;
     
     self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.7];
     CALayer *thisLayer = self.layer;
+    // original corner radius
     thisLayer.cornerRadius = 13;
     thisLayer.masksToBounds = YES;
     
@@ -135,7 +144,13 @@ static void configureMainBackgroundView(UIView *view) {
     dateLabel.textColor = lightColor;
     titleLabel.textColor = lightColor;
     
-    if (!self.date) {
+    UIResponder *responderCheck = self;
+    while (responderCheck && ![responderCheck isKindOfClass:%c(NCNotificationViewController)]) {
+        responderCheck = responderCheck.nextResponder;
+    }
+    
+    NCNotificationViewController *notificationController = (NCNotificationViewController *)responderCheck;
+    if ([notificationController.notificationRequest.sectionIdentifier hasPrefix:@"com.apple.springboard"]) {
         CAFilter *invertFilter = [CAFilter filterWithType:@"colorInvert"];
         UIImageView *iconView = self.iconButton.subviews.firstObject;
         iconView.layer.filters = @[invertFilter];
@@ -148,7 +163,7 @@ static void configureMainBackgroundView(UIView *view) {
 %hook NCMaterialView
 
 - (void)setBackgroundColor:(UIColor *)color {
-    %orig(UIColor.clearColor);
+    %orig(NULL);
 }
 
 %end

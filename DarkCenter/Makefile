@@ -2,9 +2,9 @@ ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = DarkCC
-DarkCC_FILES = Tweak.x
-DarkCC_CFLAGS = -fobjc-arc
+TWEAK_NAME = DarkCenter
+DarkCenter_FILES = Tweak.x
+DarkCenter_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

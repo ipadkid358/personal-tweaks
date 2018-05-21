@@ -1,4 +1,4 @@
-## DarkCC
+## DarkCenter
 
 A dark Control Center for iOS 10.2
 

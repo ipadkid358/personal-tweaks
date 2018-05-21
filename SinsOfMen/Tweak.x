@@ -145,15 +145,6 @@
 
 %end
 
-// Remove Night Shift toggle from Control Center
-%hook CCUINightShiftSectionController
-
-- (BOOL)enabled {
-    return NO;
-}
-
-%end
-
 // Disable Camera on the lockscreen
 %hook SpringBoard
 
