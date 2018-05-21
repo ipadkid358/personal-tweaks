@@ -4,6 +4,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = LockGlyphX
 LockGlyphX_FILES = Tweak.x
+LockGlyphX_PRIVATE_FRAMEWORKS = PassKitUIFoundation
 LockGlyphX_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk

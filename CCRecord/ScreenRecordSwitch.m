@@ -1,5 +1,5 @@
 #import <Flipswitch/FSSwitchDataSource.h>
-#import <substrate.h>
+#import <objc/runtime.h>
 
 @interface CCUIButtonModule : NSObject
 @end
@@ -22,43 +22,34 @@
 @interface ScreenRecordSwitch : NSObject <FSSwitchDataSource>
 @end
 
-static FSSwitchState switchState = FSSwitchStateOff;
-static CCUIRecordScreenShortcut *screenRecording = NULL;
-
-static BOOL patched_CCUIRecordScreenShortcut_isSupported(Class const self, SEL _cmd, int arg) {
-    return YES;
+@implementation ScreenRecordSwitch {
+    CCUIRecordScreenShortcut *_screenRecorder;
+    FSSwitchState _switchState;
 }
 
-@implementation ScreenRecordSwitch
-
 - (FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier {
-    return switchState;
+    return _switchState;
 }
 
 - (void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier {
     SBControlCenterController *controlCenterController = [objc_getClass("SBControlCenterController") sharedInstance];
     
     if (newState == FSSwitchStateOn) {
-        switchState = FSSwitchStateOn;
+        _switchState = FSSwitchStateOn;
         [controlCenterController dismissAnimated:YES completion:^{
-            [screenRecording _startRecording];
+            [_screenRecorder _startRecording];
         }];
     }
     if (newState == FSSwitchStateOff) {
-        switchState = FSSwitchStateOff;
+        _switchState = FSSwitchStateOff;
         [controlCenterController dismissAnimated:YES completion:^{
-            [screenRecording _stopRecording];
+            [_screenRecorder _stopRecording];
         }];
     }
 }
 
 - (void)switchWasRegisteredForIdentifier:(NSString *)switchIdentifier {
-    Class ScreenRecorderClass = objc_getClass("CCUIRecordScreenShortcut");
-    if (ScreenRecorderClass) {
-        Class ScreenRecorderMetaClass = object_getClass(ScreenRecorderClass); 
-        MSHookMessageEx(ScreenRecorderMetaClass, @selector(isSupported:), (IMP)&patched_CCUIRecordScreenShortcut_isSupported, NULL);
-        screenRecording = [ScreenRecorderClass new];
-    }
+    _screenRecorder = [CCUIRecordScreenShortcut new];
 }
 
 @end

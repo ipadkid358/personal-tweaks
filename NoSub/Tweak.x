@@ -7,20 +7,19 @@
 @interface FBApplicationInfo : FBBundleInfo
 @end
 
-
-static NSDictionary *blacklist = NULL;
-
+// list of apps (by bundleID) that should not have substrate loaded into them
+static NSDictionary<NSString *, id> *blacklist = NULL;
 
 %hook FBApplicationInfo
 
 - (NSDictionary *)environmentVariables {
     NSDictionary *originalEnv = %orig;
     
-    if ([[blacklist objectForKey:self.bundleIdentifier] boolValue]) {
+    if ([blacklist[self.bundleIdentifier] boolValue]) {
         NSMutableDictionary *env = originalEnv ? [NSMutableDictionary dictionaryWithDictionary:originalEnv] : [NSMutableDictionary dictionary];
         
         [env removeObjectForKey:@"DYLD_INSERT_LIBRARIES"];
-        [env setObject:@"1" forKey:@"_MSSafeMode"];
+        env[@"_MSSafeMode"] = @"1";
         originalEnv = [NSDictionary dictionaryWithDictionary:env];
     }
     
@@ -28,7 +27,6 @@ static NSDictionary *blacklist = NULL;
 }
 
 %end
-
 
 %ctor {
     blacklist = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.ipadkid.nosub.plist"];

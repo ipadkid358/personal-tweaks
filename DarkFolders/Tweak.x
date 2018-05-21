@@ -9,7 +9,7 @@
 @interface SBFolderBackgroundView : UIView
 @end
 
-
+// remove the fake blur and set the dark background color on closed folders
 %hook SBFolderIconBackgroundView
 
 - (void)setWallpaperBackgroundRect:(CGRect)rect forContents:(CGImageRef)contents withFallbackColor:(CGColorRef)fallbackColor {
@@ -20,6 +20,7 @@
 
 %end
 
+// change the background color of open folders
 %hook SBFolderBackgroundView
 
 - (void)layoutSubviews {

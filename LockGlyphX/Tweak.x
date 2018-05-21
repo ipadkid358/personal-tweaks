@@ -1,7 +1,5 @@
 #import <UIKit/UIKit.h>
 
-// MARK: - Private APIs
-
 @interface PKGlyphView : UIView
 
 @property (nonatomic) id delegate;
@@ -26,56 +24,45 @@
 
 @interface SBLockScreenManager : NSObject
 + (instancetype)sharedInstance;
-
 @property (readonly) BOOL isUILocked;
 @end
 
 @interface SBDashBoardViewBase : UIView
 @end
 
-@interface SBDashBoardViewControllerBase : UIViewController
-@end
-
 @interface SBDashBoardPageViewBase : SBDashBoardViewBase
-@property (nonatomic) __weak UIViewController *pageViewController;
+@property (nonatomic, weak) UIViewController *pageViewController;
 @end
 
-@interface SBDashBoardMesaUnlockBehavior : NSObject
-- (void)_handleMesaFailure;
-- (void)biometricEventMonitor:(id)eventMonitor handleBiometricEvent:(unsigned long long)event;
+@interface SBDashBoardViewControllerBase : UIViewController
 @end
 
 @interface SBDashBoardNotificationListViewController : SBDashBoardViewControllerBase
 @end
 
-// MARK: - TouchID glyph and status defines
-
-#define kGlyphStateDefault 0
+#define kGlyphStateDefault  0
 #define kGlyphStateScanning 1
 
-#define kTouchIDFingerUp 0
+#define kTouchIDFingerUp   0
 #define kTouchIDFingerDown 1
-#define kTouchIDMatched 3
-#define kTouchIDSuccess 4
-#define kTouchIDDisabled 6
+#define kTouchIDMatched    3
+#define kTouchIDSuccess    4
+#define kTouchIDDisabled   6
 #define kTouchIDNotMatched 10
 
-// MARK: - Global static variables
 
-static PKGlyphView *fingerglyph;
+static PKGlyphView *fingerglyph = NULL;
 
-static BOOL authenticated;
-static BOOL doingScanAnimation;
-static BOOL isObservingForCCCF;
-static BOOL canStartFingerDownAnimation;
+static UIColor *primaryColor = NULL;
+static UIColor *secondaryColor = NULL;
 
-static UIColor *primaryColor;
-static UIColor *secondaryColor;
+static BOOL authenticated = NO;
+static BOOL doingScanAnimation = NO;
+static BOOL isObservingForCCCF = NO;
+static BOOL canStartFingerDownAnimation = NO;
 
-// MARK: - Global static functions
-
+// Taken from this StackOverflow answer: http://stackoverflow.com/a/26081621
 static void addFingerShineAnimation() {
-    // Taken from this StackOverflow answer: http://stackoverflow.com/a/26081621
     CAGradientLayer *gradient = CAGradientLayer.layer;
     gradient.startPoint = CGPointMake(0, 0);
     gradient.endPoint = CGPointMake(1, 0);
@@ -100,7 +87,7 @@ static void addFingerShineAnimation() {
 }
 
 static void performFingerScanAnimation() {
-    if (canStartFingerDownAnimation && fingerglyph && [fingerglyph respondsToSelector:@selector(setState:animated:completionHandler:)]) {
+    if (canStartFingerDownAnimation && fingerglyph) {
         doingScanAnimation = YES;
         [fingerglyph setState:kGlyphStateScanning animated:YES completionHandler:^{
             doingScanAnimation = NO;
@@ -113,9 +100,7 @@ static void resetFingerScanAnimation() {
         fingerglyph.alpha = 1;
     }];
     
-    if (fingerglyph && [fingerglyph respondsToSelector:@selector(setState:animated:completionHandler:)]) {
-        [fingerglyph setState:kGlyphStateDefault animated:YES completionHandler:nil];
-    }
+    [fingerglyph setState:kGlyphStateDefault animated:YES completionHandler:nil];
 }
 
 static void performShakeFingerFailAnimation() {
@@ -131,10 +116,9 @@ static void performShakeFingerFailAnimation() {
     }
 }
 
-
-// MARK: - SBDashBoardPageViewBase hooks
-
+// setup or clean up glyph
 %hook SBDashBoardPageViewBase
+
 - (void)didMoveToWindow {
     %orig;
     
@@ -164,19 +148,16 @@ static void performShakeFingerFailAnimation() {
         secondaryColor = UIColor.clearColor;
     }
     
-    // create the glyph
-    fingerglyph = [[objc_getClass("PKGlyphView") alloc] initWithStyle:0];
+    fingerglyph = [[PKGlyphView alloc] initWithStyle:0];
     fingerglyph.delegate = self;
     fingerglyph.primaryColor = primaryColor;
     fingerglyph.secondaryColor = secondaryColor;
     
     [fingerglyph setState:kGlyphStateDefault animated:NO completionHandler:nil];
     
-    // position glyph
     fingerglyph.frame = CGRectMake(0, 0, 63, 63);
     fingerglyph.center = CGPointMake(207, 672);
     
-    // add shine animation
     addFingerShineAnimation();
     
     [self addSubview:fingerglyph];
@@ -184,7 +165,6 @@ static void performShakeFingerFailAnimation() {
     
     // listen for notifications from ColorFlow/CustomCover
     if (!isObservingForCCCF) {
-        NSNotificationCenter *notifCenter = NSNotificationCenter.defaultCenter;
         void (^lgRevertUI)(NSNotification *) = ^(NSNotification *note) {
             primaryColor = UIColor.whiteColor;
             secondaryColor = UIColor.clearColor;
@@ -211,9 +191,10 @@ static void performShakeFingerFailAnimation() {
             fingerglyph.secondaryColor = secondaryColor;
         };
         
+        NSNotificationCenter *notifCenter = NSNotificationCenter.defaultCenter;
         [notifCenter addObserverForName:@"ColorFlowLockScreenColorReversionNotification" object:NULL queue:NULL usingBlock:lgRevertUI];
-        [notifCenter addObserverForName:@"ColorFlowLockScreenColorizationNotification" object:NULL queue:NULL usingBlock:lgColorizeUI];
-        [notifCenter addObserverForName:@"CustomCoverLockScreenColourResetNotification" object:NULL queue:NULL usingBlock:lgRevertUI];
+        [notifCenter addObserverForName:@"ColorFlowLockScreenColorizationNotification"   object:NULL queue:NULL usingBlock:lgColorizeUI];
+        [notifCenter addObserverForName:@"CustomCoverLockScreenColourResetNotification"  object:NULL queue:NULL usingBlock:lgRevertUI];
         [notifCenter addObserverForName:@"CustomCoverLockScreenColourUpdateNotification" object:NULL queue:NULL usingBlock:lgColorizeUI];
         
         isObservingForCCCF = YES;
@@ -229,8 +210,7 @@ static void performShakeFingerFailAnimation() {
 
 %end
 
-// MARK: - PKGlyphView hooks
-
+// change some of the properties of glyphs to make it look better
 %hook PKGlyphView
 
 - (CALayer *)createCustomImageLayer {
@@ -244,11 +224,10 @@ static void performShakeFingerFailAnimation() {
 
 %end
 
-// MARK: - SBDashBoardMesaUnlockBehavior hooks
-
+// animate the glyph based on TouchID events
 %hook SBDashBoardMesaUnlockBehavior
 
-- (void)handleBiometricEvent:(unsigned long long)event {
+- (void)handleBiometricEvent:(NSUInteger)event {
     if (authenticated) {
         %orig;
         return;
@@ -285,28 +264,9 @@ static void performShakeFingerFailAnimation() {
 
 %end
 
-// MARK: - SBDashBoardViewController hooks
-
-%hook SBDashBoardViewController
-
-- (void)setAuthenticated:(BOOL)arg {
-    %orig;
-    
-    if (!arg) {
-        authenticated = NO;
-        fingerglyph.alpha = 1;
-        if ([fingerglyph respondsToSelector:@selector(setState:animated:completionHandler:)]) {
-            [fingerglyph setState:kGlyphStateDefault animated:NO completionHandler:nil];
-        }
-    }
-}
-
-%end
-
-// MARK: - SBDashBoardNotificationListViewController hooks
-
+// cut off the notification view so notifications and the glyph don't overlap, reverse engineered out of HotDog
 %hook SBDashBoardNotificationListViewController
-// Reverse engineered directly out of HotDog
+
 - (void)_layoutListView {
     %orig;
     

@@ -36,9 +36,9 @@
 %end
 
 // set the background of alerts to black. the alpha is 0.8, we'll keep that
-// label colors are also set in here, however it's for handling the
+// label colors are also set in here, however it's only for handling the
 // edge case where I have attributed text in those feilds, otherwise
-// those text colors should be set to the above colors
+// those text colors should be set to the colors in the above hooks
 %hook _UIAlertControllerInterfaceActionGroupView
 
 - (void)layoutSubviews {
