@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, SBBiometricSensorEvent) {
 @interface SpringBoard : FBSystemApp
 - (void)_simulateHomeButtonPress;
 - (SBScreenshotManager *)screenshotManager;
+- (BOOL)hasFinishedLaunching;
 - (BOOL)isLocked;
 @end
 
@@ -135,10 +136,12 @@ void ioEventHandler(void *target, void *refcon, IOHIDEventQueueRef queue, IOHIDE
     if (IOHIDEventGetType(event) == 29) {
         // touch down (16777233 = touch up)
         if (IOHIDEventGetEventFlags(event) == 17) {
-            SBBacklightController *backlight = [objc_getClass("SBBacklightController") sharedInstance];
-            if (!backlight.screenIsOn) {
-                SpringBoard *springboard = (SpringBoard *)[UIApplication sharedApplication];
-                [springboard _simulateHomeButtonPress];
+            SpringBoard *springboard = (SpringBoard *)[UIApplication sharedApplication];
+            if (springboard.hasFinishedLaunching) {
+                SBBacklightController *backlight = [objc_getClass("SBBacklightController") sharedInstance];
+                if (!backlight.screenIsOn) {
+                    [springboard _simulateHomeButtonPress];
+                }
             }
         }
     }

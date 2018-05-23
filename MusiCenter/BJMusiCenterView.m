@@ -1,4 +1,5 @@
 #import <MediaRemote/MediaRemote.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import <objc/runtime.h>
 
 #import "BJMusiCenterView.h"
@@ -22,11 +23,16 @@
 - (float)volumeStepUp;
 @end
 
+@interface CCUIControlCenterLabel : UILabel
+@end
+
 @interface UIApplication (UILaunchApplication)
 - (BOOL)launchApplicationWithIdentifier:(NSString *)identifier suspended:(BOOL)suspended;
 @end
 
-@interface CCUIControlCenterLabel : UILabel
+@interface MPAVRoutingSheet : UIView
+- (instancetype)initWithAVItemType:(NSInteger)type;
+- (void)showInView:(UIView *)view withCompletionHandler:(void (^)())completionHandler;
 @end
 
 
@@ -38,7 +44,7 @@
 // x: 350, y: 55
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        _musicInfoLabel = [[objc_getClass("CCUIControlCenterLabel") alloc] initWithFrame:CGRectMake(0, 0, 350, 55)];
+        _musicInfoLabel = [[CCUIControlCenterLabel alloc] initWithFrame:CGRectMake(0, 0, 350, 55)];
         _musicInfoLabel.numberOfLines = 2;
         _musicInfoLabel.text = @"Hold to launch YouTube Music!";
         _musicInfoLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightRegular];
@@ -47,6 +53,10 @@
         [_musicInfoLabel addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticTouches:)]];
         [_musicInfoLabel addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticDrag:)]];
         [_musicInfoLabel addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticPress:)]];
+        
+        UILongPressGestureRecognizer *doublePress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticDoublePress:)];
+        doublePress.numberOfTouchesRequired = 2;
+        [self addGestureRecognizer:doublePress];
         [self addSubview:_musicInfoLabel];
         
         self.clipsToBounds = YES;
@@ -66,6 +76,21 @@
     }
     
     return self;
+}
+
+- (void)handleGesticDoublePress:(UILongPressGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        MPAVRoutingSheet *routingSheet = [[MPAVRoutingSheet alloc] initWithAVItemType:2];
+        UIView *cancelButton = [routingSheet valueForKey:@"_cancelButton"];
+        cancelButton.backgroundColor = UIColor.blackColor;
+        
+        UIView *controlView = [routingSheet valueForKey:@"_controlsView"];
+        UIView *containerView = controlView.subviews[1];
+        UIView *tableView = containerView.subviews.firstObject;
+        tableView.backgroundColor = UIColor.blackColor;
+        
+        [routingSheet showInView:self withCompletionHandler:NULL];
+    }
 }
 
 - (void)handleGesticPress:(UILongPressGestureRecognizer *)gesture {
@@ -138,9 +163,12 @@
             [mediaControl _sendMediaCommand:(back ? 4 : 5)];
             
             /* maths
+             screen width = 414
+             view width = 350
+             (414-350)/2 = 32
              0-350-32 = -382
              0+350+32 = +382
-             offsets  = ± 18
+             offset = ± 18
              */
             CGRect skipFrame = resetFrame;
             skipFrame.origin.x = -400;

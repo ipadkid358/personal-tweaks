@@ -117,14 +117,12 @@ static CAFilter *invertFilter = NULL;
 
 %end
 
-// make sure we're in the control center, and then invert colors on the cells of the audio route picker
+// invert colors on the cells of the audio route picker
 %hook MPAVRoutingViewController
 
 - (MPAVRoutingTableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     MPAVRoutingTableViewCell *ret = %orig;
-    if (self.view.superview.superview.class == %c(MPUControlCenterMediaControlsView)) {
-        ret.layer.filters = @[invertFilter];
-    }
+    ret.layer.filters = @[invertFilter];
     return ret;
 }
 
