@@ -69,9 +69,9 @@
  */
 
 static const unsigned leftItemCount = 8;
-static const unsigned rightItemCount = 8;
+static const unsigned rightItemCount = 6;
 static const int leftItems[leftItemCount] = { 2, 3, 12, 33, 11, 6, 5, 24 };
-static const int rightItems[rightItemCount] = { 8, 9, 10, 0, 14, 18, 17, 20 };
+static const int rightItems[rightItemCount] = { 8, 9, 10, 0, 18, 20 };
 
 // what concerns me the most about this method, is that if any icon
 // besides one of the ones listed above show up, it'll be completely removed
@@ -124,6 +124,7 @@ static const int rightItems[rightItemCount] = { 8, 9, 10, 0, 14, 18, 17, 20 };
 
 %end
 
+// Side effect: Remove status bar item limit
 %hook UIStatusBarLayoutManager
 
 - (CGFloat)sizeNeededForItems:(id)items {
@@ -136,6 +137,7 @@ static const int rightItems[rightItemCount] = { 8, 9, 10, 0, 14, 18, 17, 20 };
 
 %end
 
+// show numbers instead of graphic for wifi
 %hook UIStatusBarDataNetworkItemView
 
 - (id)contentsImage {
@@ -146,6 +148,7 @@ static const int rightItems[rightItemCount] = { 8, 9, 10, 0, 14, 18, 17, 20 };
 
 %end
 
+// show numbers instead of graphic for cellular
 %hook UIStatusBarSignalStrengthItemView
 
 - (id)contentsImage {

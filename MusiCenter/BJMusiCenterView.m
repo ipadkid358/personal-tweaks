@@ -8,13 +8,46 @@
 - (NSString *)bundleIdentifier;
 @end
 
+// Thanks https://opensource.apple.com/source/WebCore/WebCore-7602.3.12/platform/spi/mac/MediaRemoteSPI.h.auto.html
+typedef NS_ENUM(uint32_t, MRMediaRemoteCommand) {
+    MRMediaRemoteCommandPlay,
+    MRMediaRemoteCommandPause,
+    MRMediaRemoteCommandTogglePlayPause,
+    MRMediaRemoteCommandStop,
+    MRMediaRemoteCommandNextTrack,
+    MRMediaRemoteCommandPreviousTrack,
+    MRMediaRemoteCommandAdvanceShuffleMode,
+    MRMediaRemoteCommandAdvanceRepeatMode,
+    MRMediaRemoteCommandBeginFastForward,
+    MRMediaRemoteCommandEndFastForward,
+    MRMediaRemoteCommandBeginRewind,
+    MRMediaRemoteCommandEndRewind,
+    MRMediaRemoteCommandRewind15Seconds,
+    MRMediaRemoteCommandFastForward15Seconds,
+    MRMediaRemoteCommandRewind30Seconds,
+    MRMediaRemoteCommandFastForward30Seconds,
+    MRMediaRemoteCommandToggleRecord,
+    MRMediaRemoteCommandSkipForward,
+    MRMediaRemoteCommandSkipBackward,
+    MRMediaRemoteCommandChangePlaybackRate,
+    MRMediaRemoteCommandRateTrack,
+    MRMediaRemoteCommandLikeTrack,
+    MRMediaRemoteCommandDislikeTrack,
+    MRMediaRemoteCommandBookmarkTrack,
+    MRMediaRemoteCommandSeekToPlaybackPosition,
+    MRMediaRemoteCommandChangeRepeatMode,
+    MRMediaRemoteCommandChangeShuffleMode,
+    MRMediaRemoteCommandEnableLanguageOption,
+    MRMediaRemoteCommandDisableLanguageOption
+};
+
 @interface SBMediaController : NSObject
 + (instancetype)sharedInstance;
 - (SBApplication *)nowPlayingApplication;
 - (BOOL)isPlaying;
 - (BOOL)togglePlayPause;
 - (void)_changeVolumeBy:(float)vol;
-- (BOOL)_sendMediaCommand:(unsigned)command;
+- (BOOL)_sendMediaCommand:(MRMediaRemoteCommand)command;
 @end
 
 @interface VolumeControl : NSObject
@@ -30,14 +63,23 @@
 - (BOOL)launchApplicationWithIdentifier:(NSString *)identifier suspended:(BOOL)suspended;
 @end
 
+// Thanks https://opensource.apple.com/source/WebCore/WebCore-7602.3.12/platform/spi/ios/MediaPlayerSPI.h.auto.html
+typedef NS_ENUM(NSUInteger, MPAVItemType) {
+    MPAVItemTypeUnknown,
+    MPAVItemTypeAudio,
+    MPAVItemTypeVideo,
+};
+
 @interface MPAVRoutingSheet : UIView
-- (instancetype)initWithAVItemType:(NSInteger)type;
-- (void)showInView:(UIView *)view withCompletionHandler:(void (^)())completionHandler;
+- (instancetype)initWithAVItemType:(MPAVItemType)avItemType;
+- (void)showInView:(UIView *)view withCompletionHandler:(void (^)(void))completionHandler;
+- (void)dismiss;
 @end
 
 
 @implementation BJMusiCenterView {
     CCUIControlCenterLabel *_musicInfoLabel;
+    BOOL _musicHasStartedPlaying;
 }
 
 // we're supporting portrait only
@@ -47,20 +89,19 @@
         _musicInfoLabel = [[CCUIControlCenterLabel alloc] initWithFrame:CGRectMake(0, 0, 350, 55)];
         _musicInfoLabel.numberOfLines = 2;
         _musicInfoLabel.text = @"Hold to launch YouTube Music!";
-        _musicInfoLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightRegular];
+        _musicInfoLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
         _musicInfoLabel.textAlignment = NSTextAlignmentCenter;
         _musicInfoLabel.userInteractionEnabled = YES;
+        
         [_musicInfoLabel addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticTouches:)]];
         [_musicInfoLabel addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticDrag:)]];
         [_musicInfoLabel addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticPress:)]];
-        
-        UILongPressGestureRecognizer *doublePress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleGesticDoublePress:)];
-        doublePress.numberOfTouchesRequired = 2;
-        [self addGestureRecognizer:doublePress];
         [self addSubview:_musicInfoLabel];
         
         self.clipsToBounds = YES;
         [self updateMusicLabel:NULL];
+        
+        _musicHasStartedPlaying = NO;
         
         NSString *playingInfoNotifName = (__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification;
         NSString *isPlayingNotifName = (__bridge NSString *)kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification;
@@ -76,21 +117,6 @@
     }
     
     return self;
-}
-
-- (void)handleGesticDoublePress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        MPAVRoutingSheet *routingSheet = [[MPAVRoutingSheet alloc] initWithAVItemType:2];
-        UIView *cancelButton = [routingSheet valueForKey:@"_cancelButton"];
-        cancelButton.backgroundColor = UIColor.blackColor;
-        
-        UIView *controlView = [routingSheet valueForKey:@"_controlsView"];
-        UIView *containerView = controlView.subviews[1];
-        UIView *tableView = containerView.subviews.firstObject;
-        tableView.backgroundColor = UIColor.blackColor;
-        
-        [routingSheet showInView:self withCompletionHandler:NULL];
-    }
 }
 
 - (void)handleGesticPress:(UILongPressGestureRecognizer *)gesture {
@@ -112,6 +138,7 @@
             return;
         }
         
+        _musicHasStartedPlaying = YES;
         _musicInfoLabel.text = [NSString stringWithFormat:@"%@\n%@", songName, artistName];
     });
 }
@@ -142,15 +169,20 @@
 }
 
 - (void)handleGesticDrag:(UIPanGestureRecognizer *)gesture {
+    if (!_musicHasStartedPlaying) {
+        return;
+    }
+    
     UIGestureRecognizerState gestState = gesture.state;
     
     CGPoint translation = [gesture translationInView:self];
     CGFloat newOX = translation.x;
+    BOOL shouldShowRoutePicker = (ABS(newOX) < 6) && (translation.y < -30);
     
     CGRect resetFrame = CGRectMake(0, 0, 350, 55);
     BOOL gestCancelled = (gestState == UIGestureRecognizerStateCancelled);
     
-    if ((gestState == UIGestureRecognizerStateEnded) || gestCancelled) {
+    if (((gestState == UIGestureRecognizerStateEnded) || gestCancelled) && !shouldShowRoutePicker) {
         __weak __typeof(self) weakself = self;
         void (^layoutSubviewsCompl)(UIViewAnimatingPosition finalPosition) = ^(UIViewAnimatingPosition finalPosition) {
             [weakself layoutSubviews];
@@ -160,7 +192,7 @@
         BOOL skip = (newOX > 200);
         if ((back || skip) && !gestCancelled) {
             SBMediaController *mediaControl = [objc_getClass("SBMediaController") sharedInstance];
-            [mediaControl _sendMediaCommand:(back ? 4 : 5)];
+            [mediaControl _sendMediaCommand:(back ? MRMediaRemoteCommandNextTrack : MRMediaRemoteCommandPreviousTrack)];
             
             /* maths
              screen width = 414
@@ -191,6 +223,14 @@
     } else {
         resetFrame.origin.x = newOX;
         _musicInfoLabel.frame = resetFrame;
+        static BOOL routePickerIsPresenting = NO;
+        if (shouldShowRoutePicker && !routePickerIsPresenting) {
+            routePickerIsPresenting = YES;
+            MPAVRoutingSheet *routingSheet = [[MPAVRoutingSheet alloc] initWithAVItemType:MPAVItemTypeAudio];
+            [routingSheet showInView:self withCompletionHandler:^{
+                routePickerIsPresenting = NO;
+            }];
+        }
     }
 }
 
