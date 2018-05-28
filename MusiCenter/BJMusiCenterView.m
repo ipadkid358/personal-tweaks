@@ -4,6 +4,10 @@
 
 #import "BJMusiCenterView.h"
 
+// hardcoded dimensions of the control center night shift button that we're replacing
+#define kPlusButtonWidth  350.0f
+#define kPlusButtonHeight 55.0f
+
 @interface SBApplication : NSObject
 - (NSString *)bundleIdentifier;
 @end
@@ -83,10 +87,9 @@ typedef NS_ENUM(NSUInteger, MPAVItemType) {
 }
 
 // we're supporting portrait only
-// x: 350, y: 55
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        _musicInfoLabel = [[CCUIControlCenterLabel alloc] initWithFrame:CGRectMake(0, 0, 350, 55)];
+        _musicInfoLabel = [[CCUIControlCenterLabel alloc] initWithFrame:CGRectMake(0, 0, kPlusButtonWidth, kPlusButtonHeight)];
         _musicInfoLabel.numberOfLines = 2;
         _musicInfoLabel.text = @"Hold to launch YouTube Music!";
         _musicInfoLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
@@ -148,7 +151,7 @@ typedef NS_ENUM(NSUInteger, MPAVItemType) {
         CGPoint hitPoint = [gesture locationInView:self];
         CGFloat hitX = hitPoint.x;
         
-        CGFloat const viewPOne = 350/3.0;
+        CGFloat const viewPOne = kPlusButtonWidth/3.0;
         CGFloat const viewPTwo = viewPOne*2;
         
         VolumeControl *volControl = [objc_getClass("VolumeControl") sharedVolumeControl];
@@ -169,20 +172,16 @@ typedef NS_ENUM(NSUInteger, MPAVItemType) {
 }
 
 - (void)handleGesticDrag:(UIPanGestureRecognizer *)gesture {
-    if (!_musicHasStartedPlaying) {
-        return;
-    }
-    
     UIGestureRecognizerState gestState = gesture.state;
     
     CGPoint translation = [gesture translationInView:self];
     CGFloat newOX = translation.x;
     BOOL shouldShowRoutePicker = (ABS(newOX) < 6) && (translation.y < -30);
     
-    CGRect resetFrame = CGRectMake(0, 0, 350, 55);
+    CGRect resetFrame = CGRectMake(0, 0, kPlusButtonWidth, kPlusButtonHeight);
     BOOL gestCancelled = (gestState == UIGestureRecognizerStateCancelled);
     
-    if (((gestState == UIGestureRecognizerStateEnded) || gestCancelled) && !shouldShowRoutePicker) {
+    if (((gestState == UIGestureRecognizerStateEnded) || gestCancelled) || shouldShowRoutePicker) {
         __weak __typeof(self) weakself = self;
         void (^layoutSubviewsCompl)(UIViewAnimatingPosition finalPosition) = ^(UIViewAnimatingPosition finalPosition) {
             [weakself layoutSubviews];
@@ -190,7 +189,7 @@ typedef NS_ENUM(NSUInteger, MPAVItemType) {
         
         BOOL back = (newOX < -200);
         BOOL skip = (newOX > 200);
-        if ((back || skip) && !gestCancelled) {
+        if ((back || skip) && !gestCancelled && _musicHasStartedPlaying) {
             SBMediaController *mediaControl = [objc_getClass("SBMediaController") sharedInstance];
             [mediaControl _sendMediaCommand:(back ? MRMediaRemoteCommandNextTrack : MRMediaRemoteCommandPreviousTrack)];
             
@@ -219,17 +218,20 @@ typedef NS_ENUM(NSUInteger, MPAVItemType) {
             [UIViewPropertyAnimator runningPropertyAnimatorWithDuration:(0.002 * ABS(newOX)) delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
                 _musicInfoLabel.frame = resetFrame;
             } completion:layoutSubviewsCompl];
+            
+            static BOOL routePickerIsPresenting = NO;
+            if (shouldShowRoutePicker && !routePickerIsPresenting) {
+                routePickerIsPresenting = YES;
+                MPAVRoutingSheet *routingSheet = [[MPAVRoutingSheet alloc] initWithAVItemType:MPAVItemTypeAudio];
+                [routingSheet showInView:self withCompletionHandler:^{
+                    routePickerIsPresenting = NO;
+                }];
+            }
         }
     } else {
-        resetFrame.origin.x = newOX;
-        _musicInfoLabel.frame = resetFrame;
-        static BOOL routePickerIsPresenting = NO;
-        if (shouldShowRoutePicker && !routePickerIsPresenting) {
-            routePickerIsPresenting = YES;
-            MPAVRoutingSheet *routingSheet = [[MPAVRoutingSheet alloc] initWithAVItemType:MPAVItemTypeAudio];
-            [routingSheet showInView:self withCompletionHandler:^{
-                routePickerIsPresenting = NO;
-            }];
+        if (_musicHasStartedPlaying) {
+            resetFrame.origin.x = newOX;
+            _musicInfoLabel.frame = resetFrame;
         }
     }
 }

@@ -7,6 +7,7 @@
 - (void)setArrangedSubviews:(NSArray *)subviews;
 @end
 
+
 %hook CCUISystemControlsPageViewController
 
 - (void)_updateSectionViews {
@@ -37,10 +38,6 @@
                 musicView = [[BJMusiCenterView alloc] initWithFrame:nightshift.frame];
             }
             controlCenterViews = @[musicView, toggles, brightness, airstuff, shortcuts];
-            
-            CGRect patchTopStackFrame = topStackView.frame;
-            patchTopStackFrame.size.width = 380;
-            topStackView.frame = patchTopStackFrame;
         }
         
         [targetStackView setArrangedSubviews:controlCenterViews];
@@ -58,6 +55,7 @@
 
 %end
 
+// Hide the night shift view that's still around even though we removed it form the stack view
 %hook CCUINightShiftContentView
 
 - (void)setHidden:(BOOL)hidden {
