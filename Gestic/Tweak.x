@@ -30,9 +30,13 @@
 - (float)volumeStepUp;
 @end
 
+static const CGFloat kPatchedMediaControlsY = 404.0;
+static const CGFloat kPatchedMediaControlsHeight = 228.0;
+static const CGFloat kPatchedMediaTitlesY = 102.0;
 
-static UIPanGestureRecognizer *gesticPan;
-static UIView *gesticView;
+static UIPanGestureRecognizer *gesticPan = NULL;
+static UIView *gesticView = NULL;
+
 static BOOL shouldLayoutSubviews = YES;
 
 // Get a pan gesture as soon as we load since it's used in both the below init methods
@@ -57,7 +61,22 @@ static BOOL shouldLayoutSubviews = YES;
 
 %hook MPULockScreenMediaControlsView
 
+- (CGRect)frame {
+    CGRect ret = %orig;
+    ret.origin.y = kPatchedMediaControlsY;
+    ret.size.height = kPatchedMediaControlsHeight;
+    return ret;
+}
+
+- (void)setFrame:(CGRect)frame {
+    frame.origin.y = kPatchedMediaControlsY;
+    frame.size.height = kPatchedMediaControlsHeight;
+    %orig;
+}
+
 - (id)initWithFrame:(CGRect)frame {
+    frame.origin.y = kPatchedMediaControlsY;
+    frame.size.height = kPatchedMediaControlsHeight;
     if ((self = %orig)) {
         [self setValue:NULL forKey:@"_transportControls"];
         
@@ -115,7 +134,7 @@ static BOOL shouldLayoutSubviews = YES;
     
     MPUMediaControlsTitlesView *titles = [self valueForKey:@"_titlesView"];
     
-    CGRect resetFrame = CGRectMake(0, 102, 366, 46);
+    CGRect resetFrame = CGRectMake(0, kPatchedMediaTitlesY, 366, 46);
     BOOL gestCancelled = (gestState == UIGestureRecognizerStateCancelled);
     
     if ((gestState == UIGestureRecognizerStateEnded) || gestCancelled) {
@@ -164,8 +183,13 @@ static BOOL shouldLayoutSubviews = YES;
         
         MPUMediaControlsTitlesView *titles = [self valueForKey:@"_titlesView"];
         CGRect patchFrame = titles.frame;
-        patchFrame.origin.y = 102;
+        patchFrame.origin.y = kPatchedMediaTitlesY;
         titles.frame = patchFrame;
+        
+        UIView *timeView = [self valueForKey:@"_timeView"];
+        patchFrame = timeView.frame;
+        patchFrame.origin.y = 35;
+        timeView.frame = patchFrame;
     }
 }
 
