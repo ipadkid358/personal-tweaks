@@ -1,4 +1,5 @@
 ARCHS = arm64
+INSTALL_TARGET_PROCESSES = SpringBoard
 
 include $(THEOS)/makefiles/common.mk
 
@@ -8,6 +9,3 @@ NativeVBug_CFLAGS = -fobjc-arc
 NativeVBug_LIBRARIES = activator
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-
-after-install::
-	install.exec "killall -9 SpringBoard"

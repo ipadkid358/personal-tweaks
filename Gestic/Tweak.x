@@ -30,9 +30,9 @@
 - (float)volumeStepUp;
 @end
 
-static const CGFloat kPatchedMediaControlsY = 404.0;
-static const CGFloat kPatchedMediaControlsHeight = 228.0;
-static const CGFloat kPatchedMediaTitlesY = 102.0;
+static const CGFloat kPatchedMediaControlsY = 446;
+static const CGFloat kPatchedMediaControlsHeight = 196;
+static const CGFloat kPatchedMediaTitlesY = 80;
 
 static UIPanGestureRecognizer *gesticPan = NULL;
 static UIView *gesticView = NULL;
@@ -84,7 +84,8 @@ static BOOL shouldLayoutSubviews = YES;
         
         [gesticPan addTarget:self action:@selector(handleGesticDrag:)];
         
-        gesticView = [[UIView alloc] initWithFrame:CGRectMake(0, 82, 366, 86)];
+        // controls view is (0, kPatchedMediaTitlesY, 366, 46)
+        gesticView = [[UIView alloc] initWithFrame:CGRectMake(0, kPatchedMediaTitlesY-20, 366, 86)];
         [gesticView addGestureRecognizer:oneTouch];
         [gesticView addGestureRecognizer:gesticPan];
         
@@ -99,8 +100,8 @@ static BOOL shouldLayoutSubviews = YES;
     CGPoint hitPoint = [gesture locationInView:self];
     CGFloat hitX = hitPoint.x;
     
-    CGFloat const viewPOne = 122.0f;
-    CGFloat const viewPTwo = 244.0f;
+    CGFloat const viewPOne = 122;
+    CGFloat const viewPTwo = 244;
     
     VolumeControl *volControl = [objc_getClass("VolumeControl") sharedVolumeControl];
     SBMediaController *mediaControl = [objc_getClass("SBMediaController") sharedInstance];
@@ -185,11 +186,6 @@ static BOOL shouldLayoutSubviews = YES;
         CGRect patchFrame = titles.frame;
         patchFrame.origin.y = kPatchedMediaTitlesY;
         titles.frame = patchFrame;
-        
-        UIView *timeView = [self valueForKey:@"_timeView"];
-        patchFrame = timeView.frame;
-        patchFrame.origin.y = 35;
-        timeView.frame = patchFrame;
     }
 }
 

@@ -1,4 +1,5 @@
 ARCHS = arm64
+INSTALL_TARGET_PROCESSES = SpringBoard
 
 include $(THEOS)/makefiles/common.mk
 
@@ -10,6 +11,3 @@ ScreenRecordSwitch_LIBRARIES = flipswitch
 ScreenRecordSwitch_INSTALL_PATH = /Library/Switches
 
 include $(THEOS_MAKE_PATH)/bundle.mk
-
-after-install::
-	install.exec "killall -9 SpringBoard"

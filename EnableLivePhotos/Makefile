@@ -1,4 +1,5 @@
 ARCHS = arm64
+INSTALL_TARGET_PROCESSES = MobileSlideShow Camera
 
 include $(THEOS)/makefiles/common.mk
 

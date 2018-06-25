@@ -1,4 +1,5 @@
 ARCHS = arm64
+INSTALL_TARGET_PROCESSES = AppStore
 
 include $(THEOS)/makefiles/common.mk
 
